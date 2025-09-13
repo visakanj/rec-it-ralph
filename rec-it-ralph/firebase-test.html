@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Test</title>
+</head>
+<body>
+    <h1>Firebase Connectivity Test</h1>
+    <div id="status">Testing...</div>
+    <div id="output"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    
+    <script>
+        const statusEl = document.getElementById('status');
+        const outputEl = document.getElementById('output');
+        
+        function log(message) {
+            console.log(message);
+            outputEl.innerHTML += '<p>' + message + '</p>';
+        }
+        
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyATWPODhqbeIpGrpbwYeTJG-m2LFAD0yEY",
+            authDomain: "rec-it-ralph-f086b.firebaseapp.com",
+            databaseURL: "https://rec-it-ralph-f086b-default-rtdb.firebaseio.com",
+            projectId: "rec-it-ralph-f086b",
+            storageBucket: "rec-it-ralph-f086b.firebasestorage.app",
+            messagingSenderId: "59142094523",
+            appId: "1:59142094523:web:fd8d6c899125f62b23739e",
+            measurementId: "G-F8VYDHN758"
+        };
+        
+        log('Starting Firebase initialization...');
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const database = firebase.database();
+            log('Firebase initialized successfully!');
+            
+            // Test write
+            const testRef = database.ref('test/connection');
+            testRef.set({
+                timestamp: Date.now(),
+                message: 'Firebase connection test'
+            }).then(() => {
+                log('✅ Firebase write test successful!');
+                statusEl.textContent = 'Firebase is working correctly!';
+                statusEl.style.color = 'green';
+                
+                // Test read
+                testRef.once('value', (snapshot) => {
+                    log('✅ Firebase read test successful: ' + JSON.stringify(snapshot.val()));
+                    
+                    // Clean up test data
+                    testRef.remove();
+                });
+            }).catch((error) => {
+                log('❌ Firebase write test failed: ' + error.message);
+                statusEl.textContent = 'Firebase write failed!';
+                statusEl.style.color = 'red';
+            });
+            
+        } catch (error) {
+            log('❌ Firebase initialization failed: ' + error.message);
+            statusEl.textContent = 'Firebase initialization failed!';
+            statusEl.style.color = 'red';
+        }
+    </script>
+</body>
+</html>
