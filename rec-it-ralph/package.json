@@ -1,0 +1,18 @@
+{
+  "name": "rec-it-ralph",
+  "version": "1.0.0",
+  "description": "Movie Recommender App with Firebase & TMDB",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx serve .",
+    "start": "npx serve .",
+    "build": "echo 'No build needed for static site'",
+    "deploy": "echo 'Push to GitHub - Netlify will auto-deploy'"
+  },
+  "keywords": ["movie", "recommender", "firebase", "tmdb"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.0"
+  }
+}

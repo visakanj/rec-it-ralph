@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rec-It-Ralph - Movie Recommender</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="modal-root"></div>
+    <div class="app">
+        <header class="header">
+            <div class="header-left">
+                <h1>🎬 Rec-It-Ralph</h1>
+                <div class="room-info">
+                    <span class="room-label">Room:</span>
+                    <span class="room-code" id="roomCode">---</span>
+                    <button class="room-btn" id="joinRoomBtn">Join Room</button>
+                </div>
+            </div>
+            <div class="header-buttons">
+                <button class="new-room-btn" id="newRoomBtn">New Room</button>
+                <button class="share-btn" id="shareBtn">Share Room Code</button>
+            </div>
+            <input type="file" id="importFile" accept=".json" style="display: none;">
+        </header>
+
+        <main class="main">
+            <!-- Theme Banner Section -->
+            <section class="theme-banner" id="themeBanner">
+                <!-- Banner background and gradient overlay will be added via JS -->
+                <div class="theme-banner-content">
+                    <div class="theme-banner-actions">
+                        <button class="settings-btn" id="settingsBtn" title="Advanced Settings">⚙️</button>
+                    </div>
+                    <h1 class="theme-title" id="themeTitle">Set your theme</h1>
+                </div>
+            </section>
+
+            <!-- Contributors Section -->
+            <section class="contributors-section">
+                <div class="section-header">
+                    <h2>Contributors</h2>
+                    <button class="add-contributor-btn" id="addContributorBtn">+ Add Contributor</button>
+                </div>
+                <div class="contributors-row" id="contributorsList">
+                    <!-- Contributors will be dynamically added here -->
+                </div>
+            </section>
+
+            <!-- Movie Pool Section -->
+            <section id="movie-pool-section">
+                <div id="movie-pool-header">
+                    <div class="section-header">
+                        <h2>Your Pool</h2>
+                        <button class="pick-random-btn" id="btn-pick-random" disabled>🎲 Pick Random Movie</button>
+                    </div>
+                </div>
+                <div id="movie-pool-grid" class="movie-grid">
+                    <!-- Movies will be dynamically added here -->
+                </div>
+            </section>
+
+            <!-- Watched Movies Section -->
+            <section id="watched-movies-section">
+                <h2 class="section-title">Watched Movies</h2>
+                <ul id="watched-movies-list">
+                    <!-- Watched movies will be dynamically added here -->
+                </ul>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    
+    <!-- New Room Modal -->
+    <div class="modal" id="newRoomModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🎬 Create New Room</h3>
+                <button class="close-btn" id="closeNewRoomModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="new-room-form">
+                    <label for="newRoomTheme">Theme:</label>
+                    <input type="text" id="newRoomTheme" maxlength="50" placeholder="e.g., Horror Movies, 90s Comedies">
+                    <div class="theme-examples">
+                        <small>Examples: "80s Movies", "Animated Films", "Sci-Fi Classics"</small>
+                    </div>
+                    
+                    <div class="room-code-preview">
+                        <label>Room Code:</label>
+                        <div class="room-code-display" id="newRoomCodePreview">ABC123</div>
+                    </div>
+                    
+                    <div class="contributor-transfer-section" id="contributorTransferSection">
+                        <label>
+                            <input type="checkbox" id="transferContributorsCheckbox" checked>
+                            Bring current contributors to new room
+                        </label>
+                        <div class="current-contributors-list" id="currentContributorsList">
+                            <!-- Current contributors will be listed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn" id="cancelNewRoomBtn">Cancel</button>
+                <button class="primary-btn" id="createNewRoomBtn">Create Room</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Contributor Modal -->
+    <div class="modal" id="contributorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Contributor</h3>
+                <button class="close-btn" id="closeContributorModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <label for="contributorName">Name:</label>
+                <input type="text" id="contributorName" maxlength="30" placeholder="Enter name">
+            </div>
+            <div class="modal-footer">
+                <button class="cancel-btn" id="cancelContributorBtn">Cancel</button>
+                <button class="save-btn" id="saveContributorBtn">Add Contributor</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Contributor Movies Modal -->
+    <div class="modal" id="editMoviesModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Movies for <span id="editContributorName"></span></h3>
+                <button class="close-btn" id="closeEditMoviesModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="movie-input-section">
+                    <label>Movies (3-5 recommended):</label>
+                    <div id="movieInputs">
+                        <!-- Movie inputs will be dynamically added here -->
+                    </div>
+                    <button class="add-movie-btn" id="addMovieInputBtn">+ Add Movie</button>
+                </div>
+                <div class="movie-counter">
+                    <small id="movieCounter">0 movies added</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="cancel-btn" id="cancelEditMoviesBtn">Cancel</button>
+                <button class="save-btn" id="saveMoviesBtn">Add to Pool</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Join Room Modal -->
+    <div class="modal" id="joinRoomModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🚪 Join Room</h3>
+                <button class="close-btn" id="closeJoinRoomModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Enter a room code to join an existing movie session:</p>
+                <label for="roomCodeInput">Room Code:</label>
+                <input type="text" id="roomCodeInput" maxlength="7" placeholder="e.g., ABC123X" style="text-transform: uppercase;">
+                <div class="room-help">
+                    <small>Room codes are up to 7 characters (letters and numbers)</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="cancel-btn" id="cancelJoinRoomBtn">Cancel</button>
+                <button class="primary-btn" id="confirmJoinRoomBtn">Join Room</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Movie Removal Confirmation Modal -->
+    <div class="modal" id="removeMovieModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Remove Movie</h3>
+                <button class="close-btn" id="closeRemoveMovieModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="remove-movie-content">
+                    <div class="remove-movie-poster" id="removeMoviePoster">
+                        <!-- Poster will be inserted here -->
+                    </div>
+                    <div class="remove-movie-details">
+                        <h4 id="removeMovieTitle">Movie Title</h4>
+                        <p>Are you sure you want to remove this movie from the pool?</p>
+                        <div class="remove-movie-contributors" id="removeMovieContributors">
+                            <!-- Contributors will be shown here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn" id="cancelRemoveBtn">Cancel</button>
+                <button class="primary-btn" id="confirmRemoveBtn">Remove Movie</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚙️ Advanced Settings</h3>
+                <button class="close-btn" id="closeSettingsModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h4>Data Management</h4>
+                    <div class="settings-buttons">
+                        <button class="settings-action-btn" id="exportJsonBtn">
+                            <span class="btn-icon">📄</span>
+                            <div class="btn-text">
+                                <div class="btn-title">Export JSON</div>
+                                <div class="btn-description">Full backup for re-importing</div>
+                            </div>
+                        </button>
+                        
+                        <button class="settings-action-btn" id="exportCsvBtn">
+                            <span class="btn-icon">📊</span>
+                            <div class="btn-text">
+                                <div class="btn-title">Export CSV</div>
+                                <div class="btn-description">Spreadsheet-friendly format</div>
+                            </div>
+                        </button>
+                        
+                        <button class="settings-action-btn" id="importJsonBtn">
+                            <span class="btn-icon">📥</span>
+                            <div class="btn-text">
+                                <div class="btn-title">Import Data</div>
+                                <div class="btn-description">Restore from backup file</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="cancel-btn" id="closeSettingsBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyATWPODhqbeIpGrpbwYeTJG-m2LFAD0yEY",
+            authDomain: "rec-it-ralph-f086b.firebaseapp.com",
+            databaseURL: "https://rec-it-ralph-f086b-default-rtdb.firebaseio.com",
+            projectId: "rec-it-ralph-f086b",
+            storageBucket: "rec-it-ralph-f086b.firebasestorage.app",
+            messagingSenderId: "59142094523",
+            appId: "1:59142094523:web:fd8d6c899125f62b23739e",
+            measurementId: "G-F8VYDHN758"
+        };
+        
+        // Initialize Firebase
+        if (typeof firebase !== 'undefined') {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                window.database = firebase.database();
+                console.log('Firebase initialized successfully');
+            } catch (error) {
+                console.warn('Firebase initialization failed, falling back to localStorage:', error);
+                window.database = null;
+            }
+        }
+    </script>
+    
+    <div id="modal-root"></div>
+
+    <script src="app.js?v=2024-baseline-fixed-grid"></script>
+</body>
+</html>

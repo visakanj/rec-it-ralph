@@ -1,0 +1,8 @@
+# SPA routing - all routes serve index.html
+/*    /index.html   200
+
+# API redirects (if you add backend later)
+# /api/*  https://your-api.com/api/:splat  200
+
+# Optional: Force HTTPS
+# http://rec-it-ralph.netlify.app/*  https://rec-it-ralph.netlify.app/:splat  301!
