@@ -49,6 +49,13 @@ class AppShell {
   }
 
   navigateTo(tab) {
+    // Guard: Skip re-render if already on this tab
+    // Prevents unnecessary DOM manipulation and visual instability (e.g., flickering avatars)
+    if (tab === this.currentTab) {
+      console.log(`[V2 Shell] Already on ${tab}, skipping re-render`);
+      return;
+    }
+
     // Cleanup previous screen if it has cleanup method
     if (this.currentTab) {
       const previousScreen = this.screens[this.currentTab];

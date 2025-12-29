@@ -108,29 +108,9 @@ class RoomsScreen {
           justify-content: space-between;
         }
 
-        .room-contributors {
-          display: flex;
-          align-items: center;
-          gap: 0.25rem;
-        }
-
-        .contributor-avatar {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          background: #333;
-          border: 2px solid #1a1a1a;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 0.625rem;
-          font-weight: 600;
-          color: #fff;
-          margin-left: -8px;
-        }
-
-        .contributor-avatar:first-child {
-          margin-left: 0;
+        .room-members-placeholder {
+          font-size: 0.875rem;
+          color: #666;
         }
 
         .room-pool-count {
@@ -375,9 +355,7 @@ class RoomsScreen {
             <div class="room-time">${timeAgo}</div>
           </div>
           <div class="room-card-footer">
-            <div class="room-contributors">
-              ${this.renderContributorAvatars(room)}
-            </div>
+            <div class="room-members-placeholder">Members: —</div>
             <div class="room-pool-count">—</div>
           </div>
         </div>
@@ -387,24 +365,13 @@ class RoomsScreen {
     return `<div class="rooms-list">${roomsHtml}</div>`;
   }
 
-  renderContributorAvatars(room) {
-    // For now, we don't have contributor data without subscribing to the room
-    // Show placeholder avatars
-    const placeholderCount = Math.min(3, Math.floor(Math.random() * 4) + 1);
-    const avatars = [];
-
-    for (let i = 0; i < placeholderCount; i++) {
-      const colors = ['#e50914', '#0080ff', '#00c853', '#ff9800', '#9c27b0'];
-      const color = colors[i % colors.length];
-      avatars.push(`
-        <div class="contributor-avatar" style="background: ${color};">
-          ${String.fromCharCode(65 + i)}
-        </div>
-      `);
-    }
-
-    return avatars.join('');
-  }
+  // TODO(v2): Rooms list should show real contributors/count per room.
+  // Current limitation: Room history (localStorage) only stores {roomCode, theme, lastVisited, createdAt}.
+  // To show real member data, we need EITHER:
+  //   A) Store memberCount in room history when joining/subscribing (light approach), OR
+  //   B) Fetch per-room summary from Firebase with caching/throttling (heavier, more accurate).
+  // For now, we show "Members: —" placeholder to avoid misleading random avatars.
+  // REMOVED: renderContributorAvatars() which used Math.random() causing visual flicker.
 
   renderEmptyState() {
     return `
