@@ -501,12 +501,12 @@ class AppState {
     async addMovieToPool(contributorId, title) {
         const normalizedTitle = this.normalizeTitle(title);
         const originalTitle = title.trim();
-        
+
         // Check if movie already exists in pool
-        let existingMovie = this.data.moviePool.find(m => 
+        let existingMovie = this.data.moviePool.find(m =>
             this.normalizeTitle(m.title) === normalizedTitle
         );
-        
+
         if (existingMovie) {
             // Add contributor to existing movie if not already there
             if (!existingMovie.suggestedBy.includes(contributorId)) {
@@ -518,6 +518,10 @@ class AppState {
                 this.data.moviePool.splice(movieIndex, 1);
                 this.data.moviePool.unshift(existingMovie);
             }
+
+            // IMPORTANT: Persist immediately. In v2 there is no window.ui/tmdbService, so we must save outside TMDB enrichment.
+            // TODO(v2): Decouple TMDB enrichment from persistence; use shared tmdb service (window.ui?.tmdbService or v2Adapter.tmdb).
+            this.save();
         } else {
             // Create new movie and add to top of pool
             const movie = {
@@ -528,27 +532,31 @@ class AppState {
                 addedAt: Date.now(),
                 tmdbData: null
             };
-            
+
             this.data.moviePool.unshift(movie); // Add to beginning instead of end
-            
-            // Fetch TMDB data asynchronously
+
+            // IMPORTANT: Persist immediately. In v2 there is no window.ui/tmdbService, so we must save outside TMDB enrichment.
+            // TODO(v2): Decouple TMDB enrichment from persistence; use shared tmdb service (window.ui?.tmdbService or v2Adapter.tmdb).
+            this.save();
+
+            // Fetch TMDB data asynchronously (enrichment happens after save)
             if (window.ui && window.ui.tmdbService) {
                 window.ui.tmdbService.getMovieData(originalTitle).then(tmdbData => {
                     if (tmdbData) {
                         console.log('TMDB: Adding tmdbData to movie:', originalTitle, tmdbData);
-                        
+
                         // Find the movie in the pool and update it directly
                         const movieInPool = this.data.moviePool.find(m => m.title === movie.title && m.addedAt === movie.addedAt);
                         console.log('TMDB: Movie found in pool:', movieInPool ? 'YES' : 'NO');
-                        
+
                         if (movieInPool) {
                             movieInPool.tmdbData = tmdbData;
                             console.log('TMDB: Updated movie in pool with tmdbData');
                             console.log('TMDB: Movie in pool now has tmdbData:', movieInPool.tmdbData ? 'YES' : 'NO');
-                            
+
                             this.save();
                             console.log('TMDB: Saved to Firebase');
-                            
+
                             // Trigger UI refresh to show the thumbnail
                             if (window.ui) {
                                 window.ui.render();
@@ -1071,14 +1079,14 @@ class AppState {
     saveToFirebase() {
         if (this.firebaseRef && this.isFirebaseMode) {
             this.data.lastModified = Date.now();
-            
+
             // Debug: Check if TMDB data exists in what we're saving
             const moviesWithTmdb = this.data.moviePool.filter(m => m.tmdbData);
             console.log('TMDB: Saving to Firebase -', moviesWithTmdb.length, 'movies have TMDB data');
             if (moviesWithTmdb.length > 0) {
                 console.log('TMDB: Movies with TMDB data:', moviesWithTmdb.map(m => m.title));
             }
-            
+
             this.firebaseRef.set(this.data).catch(error => {
                 console.error('Failed to save to Firebase:', error);
             });
