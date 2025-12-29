@@ -250,9 +250,9 @@ class AppState {
     constructor() {
         this.roomId = null;
         this.firebaseRef = null;
-        this.isFirebaseMode = window.database !== null;
+        this.isFirebaseMode = !!window.database;
         this.isReady = false;
-        
+
         console.log('AppState initializing, Firebase mode:', this.isFirebaseMode);
         
         if (this.isFirebaseMode) {
@@ -673,7 +673,11 @@ class AppState {
             // Set up listener for future changes
             setTimeout(() => {
                 console.log('Setting up Firebase listener after atomic room creation');
-                this.setupFirebaseListener(false);
+                if (!window.RECITRALPH_V2_MODE) {
+                    this.setupFirebaseListener(false);
+                } else {
+                    console.log('[AppState] Skipping Firebase listener setup (v2 mode)');
+                }
             }, 100);
             
             return true;
@@ -735,7 +739,11 @@ class AppState {
             // Set up listener normally after the save is complete
             setTimeout(() => {
                 console.log('Setting up Firebase listener after new room creation');
-                this.setupFirebaseListener(false);
+                if (!window.RECITRALPH_V2_MODE) {
+                    this.setupFirebaseListener(false);
+                } else {
+                    console.log('[AppState] Skipping Firebase listener setup (v2 mode)');
+                }
             }, 100);
         }
         
@@ -932,10 +940,14 @@ class AppState {
         
         // Set initial data in Firebase
         await this.firebaseRef.set(this.data);
-        
+
         // Set up real-time listener
-        this.setupFirebaseListener();
-        
+        if (!window.RECITRALPH_V2_MODE) {
+            this.setupFirebaseListener();
+        } else {
+            console.log('[AppState] Skipping Firebase listener setup (v2 mode)');
+        }
+
         // Update UI
         if (window.ui) {
             window.ui.updateRoomCode(this.roomId);
@@ -978,10 +990,14 @@ class AppState {
             // Load room data with proper defaults
             const firebaseData = snapshot.val();
             this.data = this.mergeWithDefaults(firebaseData);
-            
+
             // Set up real-time listener
-            this.setupFirebaseListener();
-            
+            if (!window.RECITRALPH_V2_MODE) {
+                this.setupFirebaseListener();
+            } else {
+                console.log('[AppState] Skipping Firebase listener setup (v2 mode)');
+            }
+
             // Update UI
             if (window.ui) {
                 window.ui.updateRoomCode(this.roomId);
@@ -2297,6 +2313,9 @@ class UIController {
 let appState, ui;
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Guard: Skip v1 UI initialization if running in v2 mode
+    if (window.RECITRALPH_V2_MODE) return;
+
     appState = new AppState();
     ui = new UIController(appState);
     
