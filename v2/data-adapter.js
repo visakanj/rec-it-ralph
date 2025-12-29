@@ -380,8 +380,28 @@ class DataAdapter {
    */
   async addMovie(contributorId, title) {
     console.log(`[V2 Adapter] Adding movie: ${title} by contributor: ${contributorId}`);
-    const movie = await this.state.addMovieToPool(contributorId, title);
-    return movie;
+
+    // DEBUG: Log state before mutation
+    console.log('[V2 Adapter DEBUG] BEFORE addMovieToPool:');
+    console.log('  - roomId:', this.state.roomId);
+    console.log('  - isFirebaseMode:', this.state.isFirebaseMode);
+    console.log('  - firebaseRef exists:', !!this.state.firebaseRef);
+    console.log('  - window.database exists:', !!window.database);
+    console.log('  - moviePool length:', this.state.data.moviePool.length);
+
+    try {
+      const movie = await this.state.addMovieToPool(contributorId, title);
+
+      // DEBUG: Log state after mutation
+      console.log('[V2 Adapter DEBUG] AFTER addMovieToPool:');
+      console.log('  - moviePool length:', this.state.data.moviePool.length);
+      console.log('  - returned movie:', movie);
+
+      return movie;
+    } catch (error) {
+      console.error('[V2 Adapter DEBUG] ✗ addMovieToPool threw error:', error);
+      throw error;
+    }
   }
 
   /**

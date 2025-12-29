@@ -499,6 +499,11 @@ class AppState {
     }
 
     async addMovieToPool(contributorId, title) {
+        console.log('[AppState DEBUG] ═══ addMovieToPool ENTRY ═══');
+        console.log('[AppState DEBUG] contributorId:', contributorId);
+        console.log('[AppState DEBUG] title:', title);
+        console.log('[AppState DEBUG] moviePool length BEFORE:', this.data.moviePool.length);
+
         const normalizedTitle = this.normalizeTitle(title);
         const originalTitle = title.trim();
 
@@ -508,21 +513,31 @@ class AppState {
         );
 
         if (existingMovie) {
+            console.log('[AppState DEBUG] ✓ Movie already exists in pool, updating');
+            console.log('[AppState DEBUG] Existing movie:', existingMovie.title);
+
             // Add contributor to existing movie if not already there
             if (!existingMovie.suggestedBy.includes(contributorId)) {
                 existingMovie.suggestedBy.push(contributorId);
+                console.log('[AppState DEBUG] Added contributor to existing movie');
             }
             // Move existing movie to top of pool
             const movieIndex = this.data.moviePool.indexOf(existingMovie);
             if (movieIndex > 0) {
                 this.data.moviePool.splice(movieIndex, 1);
                 this.data.moviePool.unshift(existingMovie);
+                console.log('[AppState DEBUG] Moved existing movie to top (was at index', movieIndex, ')');
             }
+
+            console.log('[AppState DEBUG] moviePool length AFTER update:', this.data.moviePool.length);
+            console.log('[AppState DEBUG] Calling save() after updating existing movie');
 
             // IMPORTANT: Persist immediately. In v2 there is no window.ui/tmdbService, so we must save outside TMDB enrichment.
             // TODO(v2): Decouple TMDB enrichment from persistence; use shared tmdb service (window.ui?.tmdbService or v2Adapter.tmdb).
             this.save();
         } else {
+            console.log('[AppState DEBUG] ✓ Movie does NOT exist, creating new');
+
             // Create new movie and add to top of pool
             const movie = {
                 title: originalTitle,
@@ -533,14 +548,19 @@ class AppState {
                 tmdbData: null
             };
 
+            console.log('[AppState DEBUG] Created movie object:', movie);
             this.data.moviePool.unshift(movie); // Add to beginning instead of end
+            console.log('[AppState DEBUG] moviePool length AFTER insert:', this.data.moviePool.length);
+            console.log('[AppState DEBUG] Calling save() after adding new movie');
 
             // IMPORTANT: Persist immediately. In v2 there is no window.ui/tmdbService, so we must save outside TMDB enrichment.
             // TODO(v2): Decouple TMDB enrichment from persistence; use shared tmdb service (window.ui?.tmdbService or v2Adapter.tmdb).
             this.save();
 
             // Fetch TMDB data asynchronously (enrichment happens after save)
+            console.log('[AppState DEBUG] Checking TMDB: window.ui exists?', !!window.ui, 'tmdbService exists?', !!(window.ui && window.ui.tmdbService));
             if (window.ui && window.ui.tmdbService) {
+                console.log('[AppState DEBUG] ✓ TMDB available, fetching asynchronously');
                 window.ui.tmdbService.getMovieData(originalTitle).then(tmdbData => {
                     if (tmdbData) {
                         console.log('TMDB: Adding tmdbData to movie:', originalTitle, tmdbData);
@@ -553,6 +573,7 @@ class AppState {
                             movieInPool.tmdbData = tmdbData;
                             console.log('TMDB: Updated movie in pool with tmdbData');
                             console.log('TMDB: Movie in pool now has tmdbData:', movieInPool.tmdbData ? 'YES' : 'NO');
+                            console.log('[AppState DEBUG] Calling save() after TMDB enrichment');
 
                             this.save();
                             console.log('TMDB: Saved to Firebase');
@@ -568,8 +589,12 @@ class AppState {
                 }).catch(error => {
                     console.warn('Failed to fetch TMDB data for:', originalTitle, error);
                 });
+            } else {
+                console.log('[AppState DEBUG] ✗ TMDB NOT available (expected in v2 mode)');
             }
         }
+
+        console.log('[AppState DEBUG] ═══ addMovieToPool EXIT ═══');
     }
 
     normalizeTitle(title) {
@@ -1077,8 +1102,18 @@ class AppState {
 
     // Firebase save method
     saveToFirebase() {
+        console.log('[AppState DEBUG] ─── saveToFirebase() called ───');
+        console.log('[AppState DEBUG] firebaseRef exists?', !!this.firebaseRef);
+        console.log('[AppState DEBUG] isFirebaseMode?', this.isFirebaseMode);
+        console.log('[AppState DEBUG] roomId:', this.roomId);
+
         if (this.firebaseRef && this.isFirebaseMode) {
             this.data.lastModified = Date.now();
+
+            const firebasePath = `rooms/${this.roomId}`;
+            console.log('[AppState DEBUG] ✓ Writing to Firebase path:', firebasePath);
+            console.log('[AppState DEBUG] Data being written - moviePool length:', this.data.moviePool.length);
+            console.log('[AppState DEBUG] Data being written - contributors count:', this.data.contributors.length);
 
             // Debug: Check if TMDB data exists in what we're saving
             const moviesWithTmdb = this.data.moviePool.filter(m => m.tmdbData);
@@ -1087,17 +1122,32 @@ class AppState {
                 console.log('TMDB: Movies with TMDB data:', moviesWithTmdb.map(m => m.title));
             }
 
-            this.firebaseRef.set(this.data).catch(error => {
-                console.error('Failed to save to Firebase:', error);
-            });
+            this.firebaseRef.set(this.data)
+                .then(() => {
+                    console.log('[AppState DEBUG] ✓ Firebase write SUCCESS');
+                })
+                .catch(error => {
+                    console.error('[AppState DEBUG] ✗ Firebase write FAILED:', error);
+                    console.error('[AppState DEBUG] Error code:', error.code);
+                    console.error('[AppState DEBUG] Error message:', error.message);
+                });
+        } else {
+            console.log('[AppState DEBUG] ✗ Skipping Firebase write:');
+            if (!this.firebaseRef) console.log('[AppState DEBUG]   - firebaseRef is null/undefined');
+            if (!this.isFirebaseMode) console.log('[AppState DEBUG]   - isFirebaseMode is false');
         }
     }
 
     // Override save method to use Firebase when available
     save() {
+        console.log('[AppState DEBUG] ►►► save() called ◄◄◄');
+        console.log('[AppState DEBUG] isFirebaseMode:', this.isFirebaseMode);
+
         if (this.isFirebaseMode) {
+            console.log('[AppState DEBUG] → Calling saveToFirebase()');
             this.saveToFirebase();
         } else {
+            console.log('[AppState DEBUG] → Using localStorage (debounced)');
             // Use debounced save for localStorage
             if (this.saveTimeout) clearTimeout(this.saveTimeout);
             this.saveTimeout = setTimeout(() => this.saveToStorage(), 1000);
