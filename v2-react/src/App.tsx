@@ -7,7 +7,7 @@ import WatchedScreen from './pages/WatchedScreen'
 
 function App() {
   return (
-    <BrowserRouter basename="/v2-react">
+    <BrowserRouter basename="/v2-react-build">
       <div className="min-h-screen bg-background text-text-primary font-sans">
         {/* Main content area */}
         <main className="pb-20">
