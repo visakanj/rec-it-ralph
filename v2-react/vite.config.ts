@@ -7,7 +7,7 @@ export default defineConfig({
   base: '/v2-react/',
   publicDir: 'public',
   build: {
-    outDir: 'dist',
+    outDir: '../v2-react-build',
     emptyOutDir: true
   }
 })

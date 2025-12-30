@@ -284,6 +284,7 @@ class AppState {
             moviePool: [],
             watchedMovies: [],
             themeHistory: [],
+            tonightPick: null, // v2: Current movie picked for tonight (full movie object)
             createdAt: Date.now(),
             lastModified: Date.now()
         };
@@ -292,15 +293,18 @@ class AppState {
     mergeWithDefaults(firebaseData) {
         const defaults = this.createDefault();
         if (!firebaseData) return defaults;
-        
+
         // Merge objects but ensure arrays are never null/undefined
         const merged = { ...defaults, ...firebaseData };
-        
+
         // Force arrays to be actual arrays
         merged.contributors = Array.isArray(firebaseData.contributors) ? firebaseData.contributors : [];
         merged.moviePool = Array.isArray(firebaseData.moviePool) ? firebaseData.moviePool : [];
         merged.watchedMovies = Array.isArray(firebaseData.watchedMovies) ? firebaseData.watchedMovies : [];
         merged.themeHistory = Array.isArray(firebaseData.themeHistory) ? firebaseData.themeHistory : [];
+
+        // Ensure tonightPick is either null or an object (backwards compatible)
+        merged.tonightPick = firebaseData.tonightPick || null;
         
         // Ensure each contributor has a movies array
         merged.contributors = merged.contributors.map(contributor => ({
@@ -535,6 +539,9 @@ class AppState {
             // IMPORTANT: Persist immediately. In v2 there is no window.ui/tmdbService, so we must save outside TMDB enrichment.
             // TODO(v2): Decouple TMDB enrichment from persistence; use shared tmdb service (window.ui?.tmdbService or v2Adapter.tmdb).
             this.save();
+
+            // TODO(v2): Standardize AppState return values - some methods return objects, others return undefined. For consistency and v2 adapter needs, mutation methods should return the affected object.
+            return existingMovie;
         } else {
             console.log('[AppState DEBUG] ✓ Movie does NOT exist, creating new');
 
@@ -557,7 +564,7 @@ class AppState {
             // TODO(v2): Decouple TMDB enrichment from persistence; use shared tmdb service (window.ui?.tmdbService or v2Adapter.tmdb).
             this.save();
 
-            // Fetch TMDB data asynchronously (enrichment happens after save)
+            // Fetch TMDB data asynchronously (enrichment happens after save, doesn't block return)
             console.log('[AppState DEBUG] Checking TMDB: window.ui exists?', !!window.ui, 'tmdbService exists?', !!(window.ui && window.ui.tmdbService));
             if (window.ui && window.ui.tmdbService) {
                 console.log('[AppState DEBUG] ✓ TMDB available, fetching asynchronously');
@@ -592,6 +599,9 @@ class AppState {
             } else {
                 console.log('[AppState DEBUG] ✗ TMDB NOT available (expected in v2 mode)');
             }
+
+            // TODO(v2): Standardize AppState return values - some methods return objects, others return undefined. For consistency and v2 adapter needs, mutation methods should return the affected object.
+            return movie;
         }
 
         console.log('[AppState DEBUG] ═══ addMovieToPool EXIT ═══');
@@ -796,9 +806,47 @@ class AppState {
     // Random selection
     pickRandomMovie() {
         if (this.data.moviePool.length === 0) return null;
-        
+
         const randomIndex = Math.floor(Math.random() * this.data.moviePool.length);
         return this.data.moviePool[randomIndex];
+    }
+
+    /**
+     * Set tonight's pick and persist to Firebase (v2 feature)
+     * @param {Object} movie - Movie object to set as tonight's pick
+     */
+    setTonightPick(movie) {
+        if (!movie) {
+            console.warn('[AppState] setTonightPick called with null/undefined movie');
+            return;
+        }
+
+        // Store a copy of the full movie object (including tmdbData if present)
+        this.data.tonightPick = { ...movie };
+
+        console.log('[AppState] Tonight pick set:', movie.title);
+        this.save();
+    }
+
+    /**
+     * Clear tonight's pick (v2 feature)
+     */
+    clearTonightPick() {
+        this.data.tonightPick = null;
+        console.log('[AppState] Tonight pick cleared');
+        this.save();
+    }
+
+    /**
+     * Pick a random movie and set it as tonight's pick (v2 convenience method)
+     * @returns {Object|null} The picked movie, or null if pool is empty
+     */
+    pickAndSetTonightMovie() {
+        const movie = this.pickRandomMovie();
+        if (movie) {
+            this.setTonightPick(movie);
+        }
+        return movie;
     }
 
     acceptMovie(movie) {
@@ -1197,6 +1245,18 @@ class AppState {
         // Keep only last 20 watched movies
         if (this.data.watchedMovies.length > 20) {
             this.data.watchedMovies = this.data.watchedMovies.slice(0, 20);
+        }
+
+        // Clear tonight pick if this movie was the current pick (v2 feature)
+        if (this.data.tonightPick) {
+            const isSameMovie =
+                this.data.tonightPick.title === watchedMovie.title ||
+                (this.data.tonightPick.id && watchedMovie.id && this.data.tonightPick.id === watchedMovie.id);
+
+            if (isSameMovie) {
+                console.log('[AppState] Clearing tonight pick (movie was marked watched)');
+                this.data.tonightPick = null;
+            }
         }
 
         this.save();

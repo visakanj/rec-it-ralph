@@ -30,7 +30,7 @@
 # SPA routing - v2-react routes (React migration, highest priority)
 [[redirects]]
   from = "/v2-react/*"
-  to = "/v2-react/dist/index.html"
+  to = "/v2-react-build/index.html"
   status = 200
 
 # SPA routing - v2 routes (vanilla JS, legacy)

@@ -3,6 +3,7 @@ node_modules/
 
 # Build output
 dist/
+../v2-react-build/
 
 # Logs
 *.log

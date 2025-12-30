@@ -450,6 +450,37 @@ class DataAdapter {
   }
 
   /**
+   * Pick a random movie and set it as tonight's pick
+   * @returns {Object|null} The picked movie, or null if pool is empty
+   */
+  pickTonightMovie() {
+    console.log('[V2 Adapter] Picking tonight\'s movie');
+    const movie = this.state.pickAndSetTonightMovie();
+    if (movie) {
+      console.log('[V2 Adapter] Tonight pick set:', movie.title);
+    } else {
+      console.log('[V2 Adapter] No movies in pool to pick');
+    }
+    return movie;
+  }
+
+  /**
+   * Get the current tonight pick
+   * @returns {Object|null} The tonight pick movie, or null if none set
+   */
+  getTonightPick() {
+    return this.state?.data?.tonightPick || null;
+  }
+
+  /**
+   * Clear tonight's pick
+   */
+  clearTonightPick() {
+    console.log('[V2 Adapter] Clearing tonight pick');
+    this.state.clearTonightPick();
+  }
+
+  /**
    * Undo a watched movie (move back to pool)
    * Wraps v1 AppState.undoWatched (24-hour time limit)
    * @param {Object} watchedMovie - Watched movie object
