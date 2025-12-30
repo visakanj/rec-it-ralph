@@ -27,7 +27,13 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000"
 
-# SPA routing - v2 routes take priority
+# SPA routing - v2-react routes (React migration, highest priority)
+[[redirects]]
+  from = "/v2-react/*"
+  to = "/v2-react/index.html"
+  status = 200
+
+# SPA routing - v2 routes (vanilla JS, legacy)
 [[redirects]]
   from = "/v2/*"
   to = "/v2/index.html"
