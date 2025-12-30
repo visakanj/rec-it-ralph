@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Safe area inset CSS variable */
+:root {
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* MagicPatterns fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Glass panel effect (from MagicPatterns) */
+.glass-panel {
+  background: rgba(26, 26, 29, 0.8);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}

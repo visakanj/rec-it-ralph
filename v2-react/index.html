@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Rec-It-Ralph - V2 React</title>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- V2 MODE FLAG (must be set BEFORE app.js loads) -->
+    <script>
+      window.RECITRALPH_V2_MODE = true;
+    </script>
+
+    <!-- Firebase SDK 9.17.1 (same as v1) -->
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+    <!-- Initialize Firebase -->
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyATWPODhqbeIpGrpbwYeTJG-m2LFAD0yEY",
+        authDomain: "rec-it-ralph-f086b.firebaseapp.com",
+        databaseURL: "https://rec-it-ralph-f086b-default-rtdb.firebaseio.com",
+        projectId: "rec-it-ralph-f086b",
+        storageBucket: "rec-it-ralph-f086b.firebasestorage.app",
+        messagingSenderId: "59142094523",
+        appId: "1:59142094523:web:fd8d6c899125f62b23739e",
+        measurementId: "G-F8VYDHN758"
+      };
+
+      if (typeof firebase !== 'undefined') {
+        try {
+          firebase.initializeApp(firebaseConfig);
+          window.database = firebase.database();
+          console.log('[V2 React] Firebase initialized successfully');
+        } catch (error) {
+          console.warn('[V2 React] Firebase initialization failed, falling back to localStorage:', error);
+          window.database = null;
+        }
+      } else {
+        console.error('[V2 React] Firebase SDK not loaded');
+      }
+    </script>
+
+    <!-- Load v1 core (AppState, TMDBService) -->
+    <script src="/app.js"></script>
+
+    <!-- Load DataAdapter (reuse existing) -->
+    <script src="/v2/data-adapter.js"></script>
+
+    <!-- Verify adapter ready -->
+    <script>
+      console.log('[V2 React] Adapter ready check:', {
+        hasAdapter: !!window.v2Adapter,
+        hasFirebase: !!window.firebase,
+        hasDatabase: !!window.database,
+        v2Mode: window.RECITRALPH_V2_MODE
+      });
+    </script>
+
+    <!-- React app entry point (Vite will inject this) -->
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
