@@ -94,7 +94,10 @@ export default function RoomsScreen() {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg">{room.theme}</h3>
-                    <p className="text-text-secondary text-sm">Code: {room.roomCode}</p>
+                    <div className="flex items-center gap-3 mt-1">
+                      <p className="text-text-secondary text-sm">Code: {room.roomCode}</p>
+                      <p className="text-text-tertiary text-sm">👥 0 members</p>
+                    </div>
                   </div>
                   <div className="text-text-tertiary text-sm">
                     {new Date(room.lastVisited).toLocaleDateString()}
