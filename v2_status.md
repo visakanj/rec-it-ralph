@@ -1,8 +1,8 @@
 # V2 Migration Status
 
 **Last Updated**: 2025-12-31
-**Current Phase**: Phase 2 (Complete - Awaiting QA Approval)
-**Overall Status**: Create/Join Flows Complete / Ready for Phase 3
+**Current Phase**: Phase 2 ✅ COMPLETE & MERGED
+**Overall Status**: Create/Join Flows Live in Production / Ready for Phase 3
 
 ---
 
@@ -50,13 +50,14 @@
   - Verify room create/join navigation
   - Quick smoke check: adapter wiring works
 
-- [x] **Phase 2**: CreateRoom + JoinRoom Screens (~3 hours) ✅ COMPLETE
+- [x] **Phase 2**: CreateRoom + JoinRoom Screens (~3 hours) ✅ COMPLETE & MERGED
   - Theme-only CreateRoomScreen (no streaming services)
   - Wire CreateRoomScreen: form state + adapter.createRoom()
   - Wire JoinRoomScreen: strict validation (6 chars, alphanumeric, auto-uppercase)
   - Robust success conditions (verify adapter state after operations)
   - Error handling for invalid room codes
-  - Quick smoke check: create/join flows work
+  - ActionSheet dark theme styling fix
+  - ✅ Live in production: https://rec-it-ralf.netlify.app/v2-react-build/
 
 - [ ] **Phase 3**: PoolScreen (~6 hours)
   - Import MagicPatterns: MoviePosterTile, ContributorChip, BottomSheet components
@@ -200,8 +201,8 @@
 
 ### PR #3: Phase 2 - CreateRoom + JoinRoom Flows
 **Date**: 2025-12-31
-**Branch**: `phase-2-create-join-flows`
-**Status**: Complete - Awaiting QA Approval
+**Branch**: `phase-2-create-join-flows` (merged & deleted)
+**Status**: ✅ COMPLETE & MERGED to main
 
 **Scope**:
 - Implemented CreateRoomScreen with theme-only input (no streaming services)
@@ -217,9 +218,10 @@
 - Error handling (inline errors, clear on retry)
 - Navigation to /pool on success
 
-**Files Modified** (3 files):
+**Files Modified** (5 files):
 - `/v2-react/src/pages/CreateRoomScreen.tsx` (replaced placeholder)
 - `/v2-react/src/pages/JoinRoomScreen.tsx` (replaced placeholder)
+- `/v2-react/src/components/ActionSheet.tsx` (fixed dark theme styling)
 - `/v2-react/index.html` (fixed script paths to align with Vite base)
 - `/v2-react/vite.config.ts` (fixed middleware to serve parent directory files correctly)
 
@@ -235,14 +237,20 @@
 - Pool/Tonight/Watched screen logic (Phase 3+)
 
 **Fixes Applied** (2025-12-31):
-- **Root Cause**: Vite's HTML transform automatically prepends base path to script tags, causing path doubling
-- **Issue**: When HTML had `/v2-react-build/app.js`, Vite prepended base again → `/v2-react-build/v2-react-build/app.js`
-- **Fix 1**: Use paths WITHOUT base in HTML (`/app.js`, `/v2/data-adapter.js`) - Vite adds base automatically
-- **Fix 2**: Middleware checks for `/v2-react-build/app.js` (path after Vite transformation)
-- **Fix 3**: Improved stream handling with Content-Length headers and proper async completion
-- **Result**: Dev server now serves files correctly, adapter initializes, app loads RoomsScreen
+- **Fix 1 - Vite 404 errors**:
+  - Root Cause: Vite's HTML transform automatically prepends base path to script tags, causing path doubling
+  - Solution: Use paths WITHOUT base in HTML (`/app.js`, `/v2/data-adapter.js`) - Vite adds base automatically
+  - Middleware checks for `/v2-react-build/app.js` (path after Vite transformation)
+  - Improved stream handling with Content-Length headers and proper async completion
+  - Result: Dev server serves files correctly, adapter initializes, app loads RoomsScreen
 
-**QA Status**: Pending (see Phase 2 QA Checklist below)
+- **Fix 2 - ActionSheet dark theme**:
+  - Root Cause: ActionSheet had hardcoded light theme colors (white background, dark text)
+  - Solution: Replaced all light theme classes with custom dark theme Tailwind classes
+  - Changes: bg-white → bg-surface-elevated, text-gray-* → text-text-*, icons → accent blue
+  - Result: ActionSheet matches dark theme, no jarring white flash
+
+**QA Status**: ✅ PASSED - Merged to main, live in production
 
 ---
 
@@ -451,11 +459,15 @@ _To be populated during implementation_
 
 **PR #4**: Phase 3 - PoolScreen
 
-**Waiting For**:
-- Phase 2 QA approval (manual testing)
-- User approval to proceed to Phase 3
+**Status**: Ready to start
+**Prerequisites**: ✅ Phase 2 complete & merged to main
 
-**Blocked By**: Phase 2 QA pending
+**Scope** (from plan):
+- Wire PoolScreen to Firebase via useRoom hook
+- Display movie grid with real TMDB data
+- Display contributors with filter chips
+- Add movie/contributor flows with ActionSheets
+- Real-time Firebase sync verification
 
 ---
 
