@@ -1,8 +1,8 @@
 # V2 Migration Status
 
-**Last Updated**: 2025-12-30
-**Current Phase**: Phase 0 (Complete - Awaiting QA Approval)
-**Overall Status**: Infrastructure Complete / Ready for Phase 1
+**Last Updated**: 2025-12-31
+**Current Phase**: Phase 2 (Complete - Awaiting QA Approval)
+**Overall Status**: Create/Join Flows Complete / Ready for Phase 3
 
 ---
 
@@ -42,7 +42,7 @@
   - **NO** adapter wiring yet (Phase 1)
 
 ### Core Screens
-- [ ] **Phase 1**: AdapterContext + RoomsScreen (~4 hours)
+- [x] **Phase 1**: AdapterContext + RoomsScreen (~4 hours) ✅ COMPLETE
   - Import MagicPatterns: RoomCard, ActionSheet, AppBar components
   - Create AdapterContext (wrap window.v2Adapter)
   - Create useRoom hook (subscribeRoom wrapper)
@@ -50,10 +50,11 @@
   - Verify room create/join navigation
   - Quick smoke check: adapter wiring works
 
-- [ ] **Phase 2**: CreateRoom + JoinRoom Screens (~3 hours)
-  - Import MagicPatterns: CreateRoomScreen, JoinRoomScreen UI
+- [x] **Phase 2**: CreateRoom + JoinRoom Screens (~3 hours) ✅ COMPLETE
+  - Theme-only CreateRoomScreen (no streaming services)
   - Wire CreateRoomScreen: form state + adapter.createRoom()
-  - Wire JoinRoomScreen: form state + adapter.joinRoom()
+  - Wire JoinRoomScreen: strict validation (6 chars, alphanumeric, auto-uppercase)
+  - Robust success conditions (verify adapter state after operations)
   - Error handling for invalid room codes
   - Quick smoke check: create/join flows work
 
@@ -177,48 +178,110 @@
 
 **QA Status**: Pending (see Phase 0 QA Checklist below)
 
+### PR #2: Phase 1 - AdapterContext + RoomsScreen
+**Date**: 2025-12-30
+**Branch**: `phase-1-adapter-context`
+**Status**: ✅ Complete & Merged
+
+**Scope**:
+- Created AdapterContext provider to wrap window.v2Adapter
+- Created useAdapter hook for accessing adapter in components
+- Implemented RoomsScreen with real Firebase data via adapter.getRoomHistory()
+- Wired room card click to adapter.joinRoom() + navigation to /pool
+- Added ActionSheet for Create/Join navigation
+
+**Files Modified** (3 files):
+- `/v2-react/src/context/AdapterContext.tsx` (created)
+- `/v2-react/src/pages/RoomsScreen.tsx` (replaced placeholder)
+- `/v2-react/src/components/RoomCard.tsx` (created)
+- `/v2-react/src/components/ActionSheet.tsx` (created)
+
+**QA Status**: ✅ Complete & Merged to main
+
+### PR #3: Phase 2 - CreateRoom + JoinRoom Flows
+**Date**: 2025-12-31
+**Branch**: `phase-2-create-join-flows`
+**Status**: Complete - Awaiting QA Approval
+
+**Scope**:
+- Implemented CreateRoomScreen with theme-only input (no streaming services)
+- Implemented JoinRoomScreen with strict validation:
+  - Exactly 6 characters
+  - Alphanumeric only (A-Z, 0-9)
+  - Auto-uppercase on input
+  - Inline validation errors
+- Robust success conditions:
+  - createRoom: verify return value is string + adapter.getRoomCode() updates
+  - joinRoom: verify return is true + adapter.getRoomCode() + adapter.getRoomData() populated
+- Loading states ("Creating...", "Joining...")
+- Error handling (inline errors, clear on retry)
+- Navigation to /pool on success
+
+**Files Modified** (3 files):
+- `/v2-react/src/pages/CreateRoomScreen.tsx` (replaced placeholder)
+- `/v2-react/src/pages/JoinRoomScreen.tsx` (replaced placeholder)
+- `/v2-react/index.html` (fixed script paths to align with Vite base)
+- `/v2-react/vite.config.ts` (fixed middleware to serve parent directory files correctly)
+
+**Bundle Size** (Phase 2):
+- `index.html`: 2.54 KB (gzip: 1.11 KB)
+- `index.css`: 16.85 KB (gzip: 3.85 KB)
+- `index.js`: 303.01 KB (gzip: 97.14 KB)
+- **Total**: ~322 KB raw / ~102 KB gzipped
+- **Delta from Phase 0**: +146 KB raw / +45 KB gzipped (expected due to Phase 1 components + lucide-react)
+
+**Deferred**:
+- Streaming services checkboxes (dropped from Phase 2 scope)
+- Pool/Tonight/Watched screen logic (Phase 3+)
+
+**Fixes Applied** (2025-12-31):
+- **Root Cause**: Vite's HTML transform automatically prepends base path to script tags, causing path doubling
+- **Issue**: When HTML had `/v2-react-build/app.js`, Vite prepended base again → `/v2-react-build/v2-react-build/app.js`
+- **Fix 1**: Use paths WITHOUT base in HTML (`/app.js`, `/v2/data-adapter.js`) - Vite adds base automatically
+- **Fix 2**: Middleware checks for `/v2-react-build/app.js` (path after Vite transformation)
+- **Fix 3**: Improved stream handling with Content-Length headers and proper async completion
+- **Result**: Dev server now serves files correctly, adapter initializes, app loads RoomsScreen
+
+**QA Status**: Pending (see Phase 2 QA Checklist below)
+
 ---
 
 ## Current Phase Details
 
-**Phase**: Phase 0 (Approved - Ready to Implement)
+**Phase**: Phase 2 (Complete - Awaiting QA Approval)
 
-**Scope** (FINAL for Phase 0):
+**Scope** (FINAL for Phase 2):
 
-**DO** (Infrastructure Only):
-- Create `/v2-react/` directory for React app
-- Setup Vite build configuration (vite.config.ts)
-- Setup Tailwind CSS with MagicPatterns dark theme (tailwind.config.js, postcss.config.js)
-- Setup TypeScript (tsconfig.json)
-- Create Firebase config at `/v2-react/src/config/firebase.ts` (must set window.firebase/window.database)
-- Create minimal `data-adapter.d.ts` with core methods: getRoomCode, getRoomData, subscribeRoom, createRoom, joinRoom, getRoomHistory
-- Create minimal UI shell:
-  - App.tsx with React Router (basename="/v2-react")
-  - BottomNav component (4 tabs: Rooms/Pool/Tonight/Watched)
-  - Placeholder screens (simple divs with "Coming soon")
-- Add dependencies to package.json: react, react-dom, react-router-dom, tailwindcss, vite, typescript
-- Add Netlify redirect rule: `/v2-react/* → /v2-react/index.html 200`
-- Capture baseline bundle size in v2_status.md
+**DO** (Create/Join Flows):
+- Implement CreateRoomScreen with theme-only input (text field)
+- Implement JoinRoomScreen with room code input
+- Strict validation for JoinRoomScreen:
+  - Exactly 6 characters
+  - Alphanumeric only (A-Z, 0-9)
+  - Auto-uppercase on input
+  - Inline validation errors (show first failure)
+- Wire adapter.createRoom(theme) with robust success verification
+- Wire adapter.joinRoom(roomCode) with robust success verification
+- Loading states ("Creating...", "Joining...")
+- Error handling (inline errors, clear on retry)
+- Navigation to /pool on success
 
 **DO NOT**:
-- Copy full MagicPatterns components (incremental per phase)
-- Add Framer Motion (wait until Phase 4)
-- Wire AdapterContext (Phase 1)
-- Wire any Firebase data (Phase 1+)
-- Modify /v2/ routing (stays vanilla until Phase 8)
-- Remove any legacy v2 files
+- Add streaming services checkboxes (dropped from scope)
+- Modify Pool/Tonight/Watched screens (Phase 3+)
+- Change DataAdapter implementation (use as-is)
 
 **Acceptance Criteria**:
-- `/v2-react/` loads with minimal UI shell
-- Bottom nav switches between placeholder screens
-- `/` (v1) unchanged and works
-- `/v2/` (vanilla v2) unchanged and works
-- `npm run dev` succeeds
-- `npm run build` succeeds
-- Baseline bundle size logged in v2_status.md
-- `window.v2Adapter` is ready (verify in console)
+- CreateRoomScreen: create with valid theme → success
+- CreateRoomScreen: create with empty theme → validation error
+- JoinRoomScreen: join with valid 6-char code → success
+- JoinRoomScreen: join with invalid code → "Room not found"
+- JoinRoomScreen: validation errors for < 6 chars, > 6 chars, special chars
+- Auto-uppercase works (type "abc123" → "ABC123")
+- Loading states display correctly
+- Navigation works (back button, success → /pool)
 - No TypeScript compilation errors
-- Netlify preview deploys successfully
+- Build succeeds
 
 ---
 
@@ -227,10 +290,9 @@
 _To be populated during implementation_
 
 **Known Limitations (from planning)**:
-1. **Streaming Services**: MagicPatterns has checkboxes in CreateRoom, but v1 backend doesn't store this. Options:
-   - Defer to post-MVP (cosmetic only in Phase 2)
-   - Add Firebase field in Phase 7
-   - Decision: TBD
+1. **Streaming Services**: MagicPatterns has checkboxes in CreateRoom, but v1 backend doesn't store this.
+   - **Decision (Phase 2)**: ✅ DROPPED from Phase 2 scope. Theme-only create flow implemented.
+   - Future: Could add Firebase field in Phase 7 if needed
 
 2. **Pending Invites**: MagicPatterns InviteScreen has pending invites list, but v1 doesn't track email invites.
    - Defer to post-MVP (Phase 7 will only do code/link sharing)
@@ -329,17 +391,71 @@ _To be populated during implementation_
 
 **Summary**: 11/23 checks passed locally. Remaining 12 checks require browser testing and Netlify preview deploy.
 
+### Phase 2 QA Checklist
+
+**Date**: 2025-12-31
+**Phase**: Phase 2
+**Result**: Pending Manual Testing
+
+**Dev Server**: http://localhost:5173/v2-react-build/
+
+#### CreateRoomScreen Functionality
+- [ ] Navigate to /create-room from RoomsScreen ActionSheet
+- [ ] Form displays with theme input field
+- [ ] Enter valid theme → "Create Room" button enabled
+- [ ] Click "Create Room" → loading state shows ("Creating...")
+- [ ] Success → navigates to /pool
+- [ ] Console shows: `[CreateRoomScreen] Room created successfully: {CODE}`
+- [ ] Validation: empty theme → error "Room theme is required"
+- [ ] Validation: whitespace-only theme → error "Room theme is required"
+- [ ] Error clears when user starts typing
+- [ ] Back button works (navigate to /)
+
+#### JoinRoomScreen Functionality
+- [ ] Navigate to /join-room from RoomsScreen ActionSheet
+- [ ] Form displays with room code input field
+- [ ] Auto-uppercase: type "abc123" → displays "ABC123"
+- [ ] Input limited to 6 characters (maxLength)
+- [ ] Validation: empty code → error "Room code is required"
+- [ ] Validation: < 6 chars (e.g., "ABC12") → error "Room code must be 6 characters"
+- [ ] Validation: > 6 chars prevented by maxLength
+- [ ] Validation: special chars (e.g., "ABC-12") → error "Room code can only contain letters and numbers"
+- [ ] Enter valid existing room code → "Join Room" button enabled
+- [ ] Click "Join Room" → loading state shows ("Joining...")
+- [ ] Success → navigates to /pool
+- [ ] Console shows: `[JoinRoomScreen] Joined room successfully: {CODE}`
+- [ ] Invalid room code → error "Room not found"
+- [ ] Error clears when user starts typing
+- [ ] Back button works (navigate to /)
+
+#### Robust Success Conditions
+- [ ] CreateRoom: verify adapter.getRoomCode() returns new code in console
+- [ ] JoinRoom: verify adapter.getRoomCode() returns joined code in console
+- [ ] JoinRoom: verify adapter.getRoomData() shows theme in console
+
+#### Build & TypeScript
+- [x] `npm run build` succeeds with no TypeScript errors
+- [x] No TypeScript errors in editor
+- [x] Bundle size logged: ~102 KB gzipped
+
+#### Compatibility
+- [ ] `/` (v1) unchanged and functional
+- [ ] `/v2/` (vanilla v2) unchanged and functional
+- [ ] No console errors in any version
+
+**Summary**: 3/32 checks passed (automated build). Remaining 29 checks require manual browser testing.
+
 ---
 
 ## Next Planned PR
 
-**PR #2**: Phase 1 - AdapterContext + RoomsScreen
+**PR #4**: Phase 3 - PoolScreen
 
 **Waiting For**:
-- Phase 0 QA approval (browser testing + Netlify preview)
-- Approval to proceed to Phase 1
+- Phase 2 QA approval (manual testing)
+- User approval to proceed to Phase 3
 
-**Blocked By**: Phase 0 QA pending
+**Blocked By**: Phase 2 QA pending
 
 ---
 

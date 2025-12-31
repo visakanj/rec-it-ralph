@@ -5,6 +5,21 @@
 /* Safe area inset CSS variable */
 :root {
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  color-scheme: dark;
+}
+
+body {
+  background-color: #0A0A0B;
+  color: #FFFFFF;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Hide scrollbar for clean UI but allow scrolling */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
 }
 
 /* MagicPatterns fade-in animation */

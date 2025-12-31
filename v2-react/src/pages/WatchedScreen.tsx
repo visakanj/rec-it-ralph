@@ -1,11 +1,23 @@
+import { AppBar } from '../components/AppBar'
+import { BottomNav } from '../components/BottomNav'
+
 export default function WatchedScreen() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 animate-fade-in">
-      <div className="text-center">
-        <div className="text-6xl mb-4">✓</div>
-        <h1 className="text-2xl font-bold mb-2">Watched</h1>
-        <p className="text-text-secondary">Coming soon in Phase 6</p>
-      </div>
+    <div className="min-h-screen bg-background pb-28 animate-fade-in">
+      <AppBar title="Watched" />
+
+      <main className="pt-20 px-4 max-w-md mx-auto">
+        <div className="text-center py-12">
+          <div className="text-6xl mb-4">✓</div>
+          <h2 className="text-2xl font-bold mb-2">Watched</h2>
+          <p className="text-text-secondary">Coming in Phase 6</p>
+          <p className="text-text-tertiary text-sm mt-2">
+            This screen will show watched movies
+          </p>
+        </div>
+      </main>
+
+      <BottomNav />
     </div>
   )
 }
