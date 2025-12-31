@@ -27,6 +27,7 @@ export default {
         },
         border: {
           DEFAULT: 'rgba(255, 255, 255, 0.08)',
+          subtle: 'rgba(255, 255, 255, 0.08)',
           highlight: 'rgba(255, 255, 255, 0.12)'
         }
       },
