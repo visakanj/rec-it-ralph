@@ -171,13 +171,15 @@ export default function PickScreen() {
         ) : (
           <>
             {/* Horizontal roulette strip - ALWAYS VISIBLE */}
-            <div className="relative w-full overflow-hidden mb-12" style={{ height: ITEM_HEIGHT }}>
+            <div className="relative w-full overflow-hidden mb-12 select-none" style={{ height: ITEM_HEIGHT }}>
               <motion.div
                 animate={controls}
                 initial={{ x: 0 }}
-                className="flex items-center absolute left-0"
+                className="flex items-center absolute left-0 select-none"
                 style={{
-                  paddingLeft: `calc(50vw - ${ITEM_WIDTH / 2}px)`
+                  paddingLeft: `calc(50vw - ${ITEM_WIDTH / 2}px)`,
+                  WebkitUserSelect: 'none',
+                  WebkitTouchCallout: 'none'
                 }}
               >
                 {slotItems.map((movie, idx) => (
@@ -188,17 +190,23 @@ export default function PickScreen() {
                       height: ITEM_HEIGHT,
                       marginRight: ITEM_GAP
                     }}
-                    className="rounded-xl overflow-hidden shadow-2xl flex-shrink-0"
+                    className="rounded-xl overflow-hidden shadow-2xl flex-shrink-0 select-none"
                   >
                     {movie.tmdbData?.posterPath ? (
                       <img
                         src={`https://image.tmdb.org/t/p/w500${movie.tmdbData.posterPath}`}
                         alt={movie.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover select-none pointer-events-none"
+                        draggable={false}
+                        style={{
+                          WebkitTouchCallout: 'none',
+                          userSelect: 'none',
+                          WebkitUserSelect: 'none'
+                        } as React.CSSProperties}
                       />
                     ) : (
-                      <div className="w-full h-full bg-surface flex items-center justify-center">
-                        <span className="text-6xl">🎬</span>
+                      <div className="w-full h-full bg-surface flex items-center justify-center select-none">
+                        <span className="text-6xl select-none">🎬</span>
                       </div>
                     )}
                   </div>
@@ -207,11 +215,19 @@ export default function PickScreen() {
             </div>
 
             {/* Hold button - BELOW the strip */}
-            <div className="flex flex-col items-center justify-center mt-12">
+            <div
+              className="flex flex-col items-center justify-center mt-12 select-none"
+              onContextMenu={(e) => e.preventDefault()}
+              style={{
+                WebkitUserSelect: 'none',
+                WebkitTouchCallout: 'none',
+                WebkitTapHighlightColor: 'transparent'
+              }}
+            >
               <div className="relative flex items-center justify-center">
                 {/* Circular progress ring */}
                 <svg
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 -rotate-90 pointer-events-none"
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 -rotate-90 pointer-events-none select-none"
                 >
                   {/* Background circle */}
                   <circle
@@ -243,22 +259,32 @@ export default function PickScreen() {
 
                 {/* Hold button */}
                 <motion.button
-                  className={`w-20 h-20 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 ${
+                  className={`w-20 h-20 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 select-none ${
                     isAnimating
                       ? 'bg-gray-700 cursor-not-allowed scale-90'
                       : 'bg-accent active:scale-95'
                   }`}
+                  style={{
+                    WebkitUserSelect: 'none',
+                    WebkitTouchCallout: 'none',
+                    WebkitTapHighlightColor: 'transparent'
+                  }}
                   onMouseDown={handlePressStart}
                   onMouseUp={handlePressEnd}
-                  onTouchStart={handlePressStart}
+                  onTouchStart={(e) => {
+                    e.preventDefault()
+                    handlePressStart()
+                  }}
                   onTouchEnd={handlePressEnd}
                   onMouseLeave={handlePressEnd}
+                  onContextMenu={(e) => e.preventDefault()}
                   disabled={isAnimating}
                 >
                   {isAnimating ? (
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                      className="select-none"
                     >
                       <svg
                         width="32"
@@ -267,7 +293,7 @@ export default function PickScreen() {
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2"
-                        className="text-white/50"
+                        className="text-white/50 select-none pointer-events-none"
                       >
                         <path d="M12 3v3m0 12v3m9-9h-3M6 12H3m15.364 6.364l-2.121-2.121M8.757 8.757L6.636 6.636m12.728 0l-2.121 2.121M8.757 15.243l-2.121 2.121" />
                       </svg>
@@ -278,7 +304,7 @@ export default function PickScreen() {
                       height="32"
                       viewBox="0 0 24 24"
                       fill="currentColor"
-                      className="text-white"
+                      className="text-white select-none pointer-events-none"
                     >
                       <path d="M8 5v14l11-7z" />
                     </svg>
