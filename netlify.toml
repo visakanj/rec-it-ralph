@@ -28,10 +28,12 @@
     Cache-Control = "public, max-age=31536000"
 
 # SPA routing - v2-react routes (React migration, highest priority)
+# Static files are served first, only non-existent paths fallback to index.html
 [[redirects]]
   from = "/v2-react-build/*"
   to = "/v2-react-build/index.html"
   status = 200
+  force = false
 
 # SPA routing - v2 routes (vanilla JS, legacy)
 [[redirects]]
