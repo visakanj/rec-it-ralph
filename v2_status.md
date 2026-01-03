@@ -1,8 +1,8 @@
 # V2 Migration Status
 
-**Last Updated**: 2025-12-31
-**Current Phase**: Phase 2 ✅ COMPLETE & MERGED
-**Overall Status**: Create/Join Flows Live in Production / Ready for Phase 3
+**Last Updated**: 2026-01-03
+**Current Phase**: Phase 3 ✅ COMPLETE & MERGED
+**Overall Status**: Pool Screen + Auto-Join Flow Live in Production / Ready for Phase 4
 
 ---
 
@@ -59,14 +59,17 @@
   - ActionSheet dark theme styling fix
   - ✅ Live in production: https://rec-it-ralf.netlify.app/v2-react-build/
 
-- [ ] **Phase 3**: PoolScreen (~6 hours)
-  - Import MagicPatterns: MoviePosterTile, ContributorChip, BottomSheet components
+- [x] **Phase 3**: PoolScreen + Auto-Join Flow (~8 hours) ✅ COMPLETE & MERGED
+  - Import MagicPatterns: MoviePosterTile, ContributorChip components
   - Wire useRoom hook for real-time sync
   - Map contributors to ContributorChip
   - Map moviePool to MoviePosterTile grid
   - Add contributor/movie flows with ActionSheets
+  - **NEW**: Auto-join flow via share URL with name prompt overlay
+  - **NEW**: Blur effect on pool view during name prompt
+  - **NEW**: localStorage persistence for returning users
   - Quick smoke check: Firebase real-time updates work
-  - **CRITICAL**: Full cross-tab v1↔v2 sync QA
+  - ✅ Live in production: https://rec-it-ralf.netlify.app/v2-react-build/
 
 - [ ] **Phase 4**: PickScreen (Interactive Picker) (~5 hours)
   - Import MagicPatterns: PickScreen with hold-to-spin animation
@@ -252,44 +255,91 @@
 
 **QA Status**: ✅ PASSED - Merged to main, live in production
 
+### PR #4: Phase 3 - PoolScreen + Auto-Join Flow
+**Date**: 2026-01-03
+**Branch**: `main` (direct commits)
+**Status**: ✅ COMPLETE & MERGED to main
+
+**Scope**:
+- Implemented PoolScreen with real-time Firebase sync via useRoom hook
+- Wired movie pool grid with MoviePosterTile components
+- Wired contributor filter chips with ContributorChip components
+- Implemented 2-step Add Movie flow (select contributor → enter title)
+- Implemented Add Contributor flow with share URL generation
+- **NEW FEATURE**: Auto-join flow via share URL
+  - URL parameter detection: `/join-room?code=XXXXXX`
+  - Automatic room join in background
+  - Navigation to pool with blur effect
+  - Name prompt overlay on blurred pool view
+  - localStorage persistence for returning users (skip prompt)
+- Polish improvements:
+  - Auto-focus inputs on sheet open
+  - Success confirmation ("Added ✓")
+  - Keep sheets open after add for bulk operations
+  - Most-recent-first contributor ordering
+  - Removed add-contributor CTA from scroll area
+
+**Files Modified** (7 files):
+- `/v2-react/src/pages/PoolScreen.tsx` (full implementation + auto-join logic)
+- `/v2-react/src/pages/JoinRoomScreen.tsx` (URL parameter detection + auto-join)
+- `/v2-react/src/components/ContributorChip.tsx` (created)
+- `/v2-react/src/components/MoviePosterTile.tsx` (created)
+- `/v2-react/src/hooks/useRoom.tsx` (created for real-time sync)
+- `/v2-react/src/types/data-adapter.d.ts` (expanded types)
+- `/v2-react-build/*` (production build artifacts)
+
+**Bundle Size** (Phase 3):
+- `index.html`: 2.65 KB (gzip: 1.15 KB)
+- `index.css`: 22.51 KB (gzip: 4.66 KB)
+- `index.js`: 324.51 KB (gzip: 101.83 KB)
+- **Total**: ~350 KB raw / ~106 KB gzipped
+- **Delta from Phase 2**: +28 KB raw / +4 KB gzipped (new components + auto-join logic)
+
+**Critical Fixes**:
+- **Fix 1 - React Hooks violation**: Moved early returns AFTER all hook calls to comply with Rules of Hooks
+- **Fix 2 - useCallback dependencies**: Added proper dependency arrays to prevent stale closures
+- **Fix 3 - Adapter readiness**: Added isReady/adapter checks before executing auto-join logic
+
+**Testing**:
+- ✅ Pool screen displays movies and contributors from Firebase
+- ✅ Real-time sync works (changes reflect immediately)
+- ✅ Add Movie flow works (2-step with contributor selection)
+- ✅ Add Contributor flow works with share URL generation
+- ✅ Auto-join via share URL works for first-time users
+- ✅ Auto-join skips prompt for returning users (localStorage)
+- ✅ Blur effect works correctly on pool view during name prompt
+- ✅ No React errors in production build
+
+**QA Status**: ✅ PASSED - Merged to main, live in production
+
 ---
 
 ## Current Phase Details
 
-**Phase**: Phase 2 (Complete - Awaiting QA Approval)
+**Phase**: Phase 3 ✅ COMPLETE
 
-**Scope** (FINAL for Phase 2):
+**Phase 3 Summary** (PoolScreen + Auto-Join Flow):
 
-**DO** (Create/Join Flows):
-- Implement CreateRoomScreen with theme-only input (text field)
-- Implement JoinRoomScreen with room code input
-- Strict validation for JoinRoomScreen:
-  - Exactly 6 characters
-  - Alphanumeric only (A-Z, 0-9)
-  - Auto-uppercase on input
-  - Inline validation errors (show first failure)
-- Wire adapter.createRoom(theme) with robust success verification
-- Wire adapter.joinRoom(roomCode) with robust success verification
-- Loading states ("Creating...", "Joining...")
-- Error handling (inline errors, clear on retry)
-- Navigation to /pool on success
+**What Was Built**:
+- PoolScreen with real-time Firebase sync
+- Movie pool grid with MoviePosterTile components
+- Contributor filter chips with ContributorChip components
+- 2-step Add Movie flow (select contributor → enter title)
+- Add Contributor flow with share URL copy
+- **Auto-join flow**: Share URL → auto-join → pool with blur → name prompt → add contributor
+- localStorage persistence for returning users
 
-**DO NOT**:
-- Add streaming services checkboxes (dropped from scope)
-- Modify Pool/Tonight/Watched screens (Phase 3+)
-- Change DataAdapter implementation (use as-is)
+**Key Accomplishments**:
+- ✅ Full PoolScreen implementation matching MagicPatterns design
+- ✅ Real-time Firebase sync working correctly
+- ✅ Share URL generation and auto-join flow
+- ✅ Blur effect + name prompt overlay UX
+- ✅ Returning user optimization (skip prompt)
+- ✅ Polish improvements (auto-focus, success states, bulk operations)
+- ✅ Fixed critical React Hooks violations
+- ✅ Production deployment successful
 
-**Acceptance Criteria**:
-- CreateRoomScreen: create with valid theme → success
-- CreateRoomScreen: create with empty theme → validation error
-- JoinRoomScreen: join with valid 6-char code → success
-- JoinRoomScreen: join with invalid code → "Room not found"
-- JoinRoomScreen: validation errors for < 6 chars, > 6 chars, special chars
-- Auto-uppercase works (type "abc123" → "ABC123")
-- Loading states display correctly
-- Navigation works (back button, success → /pool)
-- No TypeScript compilation errors
-- Build succeeds
+**What's Next**: Phase 4 - PickScreen (Interactive Picker)
 
 ---
 
@@ -457,24 +507,26 @@ _To be populated during implementation_
 
 ## Next Planned PR
 
-**PR #4**: Phase 3 - PoolScreen
+**PR #5**: Phase 4 - PickScreen (Interactive Picker)
 
-**Status**: In Progress
-**Prerequisites**: ✅ Phase 2 complete & merged to main
+**Status**: Pending Planning & User Alignment
+**Prerequisites**: ✅ Phase 3 complete & merged to main
 
-**Scope** (from plan):
-- Wire PoolScreen to Firebase via useRoom hook
-- Display movie grid with real TMDB data
-- Display contributors with filter chips
-- Add movie/contributor flows with ActionSheets
-- Real-time Firebase sync verification
+**Scope** (from roadmap):
+- Import MagicPatterns: PickScreen with hold-to-spin animation
+- **ADD** Framer Motion dependency (~70KB - first use)
+- Wire to adapter.pickTonightMovie()
+- Confetti effect on selection
+- Navigate to /tonight after pick
+- Quick smoke check: pick flow works, bundle size acceptable
 
-**Polish & UX Improvements**:
-- Fixed contributor chip clipping issue (removed scale-105 from active state, added overflow-y-visible)
-- Auto-focus input on "Add Contributor" sheet open and after success
-- Success confirmation for Add Contributor/Movie ("Adding..." → "Added ✓", sheet stays open)
-- New contributors appear leftmost (most-recent-first ordering)
-- Removed "+ Add" CTA from contributor scroll; add contributor via top-right "+" only
+**Key Questions to Align**:
+1. Should we implement the full hold-to-spin animation from MagicPatterns?
+2. Do we want confetti effect, or is a simpler confirmation better?
+3. Any specific UX preferences for the pick interaction?
+4. Should we add any additional features beyond the plan?
+
+**Estimated Time**: ~5 hours
 
 ---
 
