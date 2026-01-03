@@ -1,11 +1,12 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { AppBar } from '../components/AppBar'
 import { BottomNav } from '../components/BottomNav'
 import { useAdapter } from '../context/AdapterContext'
 
 export default function JoinRoomScreen() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { adapter, isReady } = useAdapter()
   const [roomCode, setRoomCode] = useState('')
   const [loading, setLoading] = useState(false)
@@ -102,6 +103,64 @@ export default function JoinRoomScreen() {
       setLoading(false)
     }
   }
+
+  // Auto-join from URL parameter
+  const handleAutoJoinFromURL = async (code: string) => {
+    setLoading(true)
+
+    try {
+      // Join the room
+      const success = await adapter.joinRoom(code)
+
+      if (success !== true) {
+        setError('Room not found')
+        setLoading(false)
+        return
+      }
+
+      // Verify room joined
+      const currentRoomCode = adapter.getRoomCode()
+      const roomData = adapter.getRoomData()
+
+      if (!currentRoomCode || !roomData?.theme) {
+        throw new Error('Room data not populated after join')
+      }
+
+      console.log('[JoinRoomScreen] Auto-joined room from URL:', currentRoomCode)
+
+      // Navigate to pool with flag to show name prompt
+      navigate('/pool', {
+        state: {
+          showNamePrompt: true,
+          autoJoined: true
+        }
+      })
+    } catch (err) {
+      console.error('[JoinRoomScreen] Auto-join from URL failed:', err)
+      setError('Failed to join room')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Detect URL parameter and auto-join
+  useEffect(() => {
+    const codeParam = searchParams.get('code')
+    if (codeParam && isReady) {
+      const uppercased = codeParam.toUpperCase()
+
+      // Validate code format
+      const validationError = validateRoomCode(uppercased)
+      if (validationError) {
+        setError(validationError)
+        return
+      }
+
+      // Auto-join the room
+      handleAutoJoinFromURL(uppercased)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, isReady])
 
   return (
     <div className="min-h-screen bg-background pb-28 animate-fade-in">

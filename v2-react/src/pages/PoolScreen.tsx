@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { Plus, UserPlus, Film, X, ChevronLeft, Copy, Check } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AppBar } from '../components/AppBar'
@@ -13,6 +13,7 @@ import { useRoom } from '../hooks/useRoom'
 export default function PoolScreen() {
   const { adapter, isReady } = useAdapter()
   const navigate = useNavigate()
+  const location = useLocation()
   const roomCode = adapter?.getRoomCode()
   const roomData = useRoom(roomCode)
 
@@ -40,6 +41,12 @@ export default function PoolScreen() {
   const [addContributorStatus, setAddContributorStatus] = useState<'idle' | 'submitting' | 'success'>('idle')
   const [shareUrlCopied, setShareUrlCopied] = useState(false)
 
+  // Auto-join name prompt state (separate from manual add contributor)
+  const [showAutoJoinNamePrompt, setShowAutoJoinNamePrompt] = useState(false)
+  const [autoJoinName, setAutoJoinName] = useState('')
+  const [autoJoinNameError, setAutoJoinNameError] = useState('')
+  const [isAddingAutoJoinContributor, setIsAddingAutoJoinContributor] = useState(false)
+
   // Auto-focus contributor input when sheet opens
   useEffect(() => {
     if (isAddContributorOpen) {
@@ -61,6 +68,29 @@ export default function PoolScreen() {
       return () => clearTimeout(timer)
     }
   }, [addMovieStep])
+
+  // Detect auto-join from share URL and show name prompt
+  useEffect(() => {
+    const state = location.state as { showNamePrompt?: boolean; autoJoined?: boolean } | null
+
+    if (state?.showNamePrompt && state?.autoJoined) {
+      // Check if user already has saved name
+      const savedName = localStorage.getItem('recitralph:v2:contributorName')
+
+      if (savedName) {
+        // Auto-add contributor with saved name
+        console.log('[PoolScreen] Auto-adding contributor with saved name:', savedName)
+        handleAddContributorWithName(savedName)
+      } else {
+        // Show name prompt
+        console.log('[PoolScreen] Showing auto-join name prompt')
+        setShowAutoJoinNamePrompt(true)
+      }
+
+      // Clear navigation state to prevent re-showing on refresh
+      window.history.replaceState({}, '')
+    }
+  }, [location])
 
   // Loading state
   if (!isReady) {
@@ -258,19 +288,62 @@ export default function PoolScreen() {
     }
   }
 
+  // Handle add contributor for auto-join flow
+  const handleAddContributorWithName = async (name: string) => {
+    const trimmedName = name.trim()
+
+    if (!trimmedName) {
+      setAutoJoinNameError('Name is required')
+      return
+    }
+
+    if (trimmedName.length > 20) {
+      setAutoJoinNameError('Name must be 20 characters or less')
+      return
+    }
+
+    setIsAddingAutoJoinContributor(true)
+    setAutoJoinNameError('')
+
+    try {
+      adapter.addContributor(trimmedName)
+
+      // Save name for future auto-joins
+      localStorage.setItem('recitralph:v2:contributorName', trimmedName)
+
+      console.log('[PoolScreen] Auto-join contributor added:', trimmedName)
+
+      // Close prompt (un-blur pool view)
+      setShowAutoJoinNamePrompt(false)
+      setAutoJoinName('')
+    } catch (error) {
+      console.error('[PoolScreen] Failed to add contributor:', error)
+      setAutoJoinNameError('Failed to add you to the room')
+    } finally {
+      setIsAddingAutoJoinContributor(false)
+    }
+  }
+
+  // Handle auto-join name submit
+  const handleAutoJoinNameSubmit = () => {
+    handleAddContributorWithName(autoJoinName)
+  }
+
   return (
     <div className="min-h-screen bg-background pb-28 animate-fade-in">
-      <AppBar
-        title={theme || 'Movie Pool'}
-        action={
-          <button
-            onClick={() => setIsMainActionOpen(true)}
-            className="p-2 hover:bg-surface rounded-full transition-colors"
-          >
-            <Plus className="w-6 h-6 text-text-primary" />
-          </button>
-        }
-      />
+      {/* Main pool content - blur when auto-join name prompt is shown */}
+      <div className={showAutoJoinNamePrompt ? 'filter blur-sm pointer-events-none' : ''}>
+        <AppBar
+          title={theme || 'Movie Pool'}
+          action={
+            <button
+              onClick={() => setIsMainActionOpen(true)}
+              className="p-2 hover:bg-surface rounded-full transition-colors"
+            >
+              <Plus className="w-6 h-6 text-text-primary" />
+            </button>
+          }
+        />
 
       <main className="pt-20">
         {/* Contributors filter section */}
@@ -649,6 +722,57 @@ export default function PoolScreen() {
               {addContributorStatus === 'idle' && 'Add Contributor'}
             </button>
           </div>
+        </div>
+      </ActionSheet>
+      </div>
+
+      {/* Auto-Join Name Prompt ActionSheet */}
+      <ActionSheet
+        isOpen={showAutoJoinNamePrompt}
+        onClose={() => {
+          setShowAutoJoinNamePrompt(false)
+          setAutoJoinName('')
+          setAutoJoinNameError('')
+        }}
+        title="What's your name?"
+      >
+        <p className="text-sm text-text-secondary mb-4">
+          Welcome! Let's add you to <span className="font-bold">{roomData?.theme}</span>
+        </p>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-2">
+              Your Name
+            </label>
+            <input
+              autoFocus
+              type="text"
+              value={autoJoinName}
+              onChange={(e) => {
+                setAutoJoinName(e.target.value)
+                setAutoJoinNameError('')
+              }}
+              placeholder="e.g. Sarah"
+              onKeyPress={(e) => e.key === 'Enter' && handleAutoJoinNameSubmit()}
+              className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+              disabled={isAddingAutoJoinContributor}
+            />
+          </div>
+
+          {autoJoinNameError && (
+            <div className="px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+              <p className="text-sm text-red-400">{autoJoinNameError}</p>
+            </div>
+          )}
+
+          <button
+            onClick={handleAutoJoinNameSubmit}
+            disabled={isAddingAutoJoinContributor}
+            className="w-full px-6 py-3 bg-accent hover:bg-accent-hover text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+          >
+            {isAddingAutoJoinContributor ? 'Adding...' : 'Continue'}
+          </button>
         </div>
       </ActionSheet>
 
