@@ -49,11 +49,11 @@
     </script>
 
     <!-- Load v1 core (AppState, TMDBService) -->
-    <!-- Note: Vite will prepend base path (/v2-react-build/) automatically -->
-    <script src="/app.js"></script>
+    <!-- Files copied to public/ during build, served from /v2-react-build/ -->
+    <script src="./app.js"></script>
 
     <!-- Load DataAdapter (reuse existing) -->
-    <script src="/v2/data-adapter.js"></script>
+    <script src="./v2/data-adapter.js"></script>
 
     <!-- Verify adapter ready -->
     <script>
