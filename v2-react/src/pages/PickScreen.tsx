@@ -147,7 +147,7 @@ export default function PickScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-28 animate-fade-in">
+    <div className="h-screen overflow-y-hidden bg-background pb-28 animate-fade-in">
       <AppBar title="Pick Tonight" />
 
       <main className="pt-20 px-4 max-w-full">
