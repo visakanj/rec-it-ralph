@@ -329,6 +329,30 @@ class DataAdapter {
   }
 
   /**
+   * Fetch room data from Firebase once (no subscription)
+   * Useful for getting room info without joining/subscribing
+   * @param {string} roomCode - Room code to fetch
+   * @returns {Promise<Object|null>} - Room data or null if not found
+   */
+  async fetchRoomData(roomCode) {
+    try {
+      const ref = window.database.ref(`rooms/${roomCode}`);
+      const snapshot = await ref.once('value');
+      const rawData = snapshot.val();
+
+      if (!rawData) {
+        return null;
+      }
+
+      // Merge with defaults just like subscribeRoom does
+      return this.state.mergeWithDefaults(rawData);
+    } catch (error) {
+      console.error(`[V2 Adapter] Failed to fetch room ${roomCode}:`, error);
+      return null;
+    }
+  }
+
+  /**
    * Get room theme
    * @returns {string}
    */

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, UserPlus, Film, X } from 'lucide-react'
+import { Plus, UserPlus, Film, X, ChevronLeft, Copy, Check } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { AppBar } from '../components/AppBar'
 import { BottomNav } from '../components/BottomNav'
 import { ContributorChip } from '../components/ContributorChip'
@@ -24,10 +25,12 @@ export default function PoolScreen() {
   const [isAddMovieOpen, setIsAddMovieOpen] = useState(false)
   const [isAddContributorOpen, setIsAddContributorOpen] = useState(false)
   const [isMainActionOpen, setIsMainActionOpen] = useState(false)
+  const [selectedMovieIndex, setSelectedMovieIndex] = useState<number | null>(null)
 
-  // Add movie form state
+  // Add movie form state (2-step flow)
+  const [addMovieStep, setAddMovieStep] = useState<1 | 2>(1)
+  const [selectedContributorForMovie, setSelectedContributorForMovie] = useState<string | null>(null)
   const [movieTitle, setMovieTitle] = useState('')
-  const [movieContributorId, setMovieContributorId] = useState('')
   const [addMovieError, setAddMovieError] = useState('')
   const [addMovieStatus, setAddMovieStatus] = useState<'idle' | 'submitting' | 'success'>('idle')
 
@@ -35,6 +38,7 @@ export default function PoolScreen() {
   const [contributorName, setContributorName] = useState('')
   const [addContributorError, setAddContributorError] = useState('')
   const [addContributorStatus, setAddContributorStatus] = useState<'idle' | 'submitting' | 'success'>('idle')
+  const [shareUrlCopied, setShareUrlCopied] = useState(false)
 
   // Auto-focus contributor input when sheet opens
   useEffect(() => {
@@ -46,6 +50,17 @@ export default function PoolScreen() {
       return () => clearTimeout(timer)
     }
   }, [isAddContributorOpen])
+
+  // Auto-focus movie title input when reaching Step 2
+  useEffect(() => {
+    if (addMovieStep === 2) {
+      // Delay to allow slide animation to complete (spring animation needs ~400-450ms)
+      const timer = setTimeout(() => {
+        movieTitleInputRef.current?.focus()
+      }, 450)
+      return () => clearTimeout(timer)
+    }
+  }, [addMovieStep])
 
   // Loading state
   if (!isReady) {
@@ -103,21 +118,31 @@ export default function PoolScreen() {
       : moviePool.filter((m: any) => m.suggestedBy.includes(selectedContributor))
 
   // Map v1 movie shape to component props
-  const movies = filteredMovies.map((movie: any) => ({
+  const movies = filteredMovies.map((movie: any, index: number) => ({
     id: movie.title,
     title: movie.title,
-    year: movie.tmdbData?.release_date?.substring(0, 4) || '',
-    imageUrl: movie.tmdbData?.poster_path
-      ? `https://image.tmdb.org/t/p/w342${movie.tmdbData.poster_path}`
+    year: movie.tmdbData?.releaseDate?.substring(0, 4) || '',
+    imageUrl: movie.tmdbData?.posterPath
+      ? `https://image.tmdb.org/t/p/w342${movie.tmdbData.posterPath}`
       : '',
-    rating: movie.tmdbData?.vote_average?.toFixed(1) || '',
-    suggestedBy: movie.suggestedBy
+    rating: movie.tmdbData?.voteAverage?.toFixed(1) || '',
+    suggestedBy: movie.suggestedBy,
+    originalIndex: moviePool.findIndex((m: any) => m.title === movie.title && m.addedAt === movie.addedAt)
   }))
 
   // Build contributor color map for MoviePosterTile badges
   const contributorColors = contributors.reduce(
     (acc: any, c: any) => {
       acc[c.id] = c.color
+      return acc
+    },
+    {} as { [key: string]: string }
+  )
+
+  // Build contributor name map for MoviePosterTile badges
+  const contributorNames = contributors.reduce(
+    (acc: any, c: any) => {
+      acc[c.id] = c.name
       return acc
     },
     {} as { [key: string]: string }
@@ -141,15 +166,15 @@ export default function PoolScreen() {
       return
     }
 
-    if (!movieContributorId) {
+    if (!selectedContributorForMovie) {
       setAddMovieError('Please select a contributor')
       return
     }
 
     setAddMovieStatus('submitting')
     try {
-      await adapter.addMovie(movieContributorId, movieTitle.trim())
-      // Success - show confirmation, clear input, stay open
+      await adapter.addMovie(selectedContributorForMovie, movieTitle.trim())
+      // Success - show confirmation, clear input only (keep contributor), stay open on step 2
       setAddMovieStatus('success')
       setMovieTitle('')
       setAddMovieError('')
@@ -203,6 +228,36 @@ export default function PoolScreen() {
     }
   }
 
+  // Handle movie poster click
+  const handleMovieClick = (movieIndex: number) => {
+    setSelectedMovieIndex(selectedMovieIndex === movieIndex ? null : movieIndex)
+  }
+
+  // Handle delete movie
+  const handleDeleteMovie = (movieIndex: number) => {
+    adapter.removeMovie(movieIndex)
+    setSelectedMovieIndex(null)
+  }
+
+  // Handle copy share URL
+  const handleCopyShareUrl = async () => {
+    if (!roomCode) return
+
+    const shareUrl = `${window.location.origin}/v2-react-build/join-room?code=${roomCode}`
+
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setShareUrlCopied(true)
+
+      // Reset copied state after 2 seconds
+      setTimeout(() => {
+        setShareUrlCopied(false)
+      }, 2000)
+    } catch (error) {
+      console.error('[PoolScreen] Failed to copy URL:', error)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background pb-28 animate-fade-in">
       <AppBar
@@ -220,34 +275,38 @@ export default function PoolScreen() {
       <main className="pt-20">
         {/* Contributors filter section */}
         <div className="px-4 mb-4">
-          <div className="flex gap-2 overflow-x-auto overflow-y-visible py-2 scrollbar-hide">
-            {/* "All" chip */}
-            <ContributorChip
-              id="all"
-              name="All"
-              color="#3B82F6"
-              active={selectedContributor === 'all'}
-              onClick={() => setSelectedContributor('all')}
-              movieCount={moviePool.length}
-            />
-
-            {/* Contributor chips */}
-            {contributors.map((contributor: any) => (
+          <div className="relative">
+            <div className="flex gap-2 overflow-x-auto overflow-y-visible py-2 scrollbar-hide">
+              {/* "All" chip */}
               <ContributorChip
-                key={contributor.id}
-                id={contributor.id}
-                name={contributor.name}
-                color={contributor.color}
-                active={selectedContributor === contributor.id}
-                onClick={() => setSelectedContributor(contributor.id)}
-                movieCount={contributorMovieCounts[contributor.id]}
+                id="all"
+                name="All"
+                color="#3B82F6"
+                active={selectedContributor === 'all'}
+                onClick={() => setSelectedContributor('all')}
+                movieCount={moviePool.length}
               />
-            ))}
+
+              {/* Contributor chips */}
+              {contributors.map((contributor: any) => (
+                <ContributorChip
+                  key={contributor.id}
+                  id={contributor.id}
+                  name={contributor.name}
+                  color={contributor.color}
+                  active={selectedContributor === contributor.id}
+                  onClick={() => setSelectedContributor(contributor.id)}
+                  movieCount={contributorMovieCounts[contributor.id]}
+                />
+              ))}
+            </div>
+            {/* Right fade gradient to indicate more content */}
+            <div className="absolute top-0 right-0 bottom-0 w-16 bg-gradient-to-l from-background to-transparent pointer-events-none" />
           </div>
         </div>
 
         {/* Movie grid */}
-        <div className="px-4">
+        <div className="relative px-4">
           {movies.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🎬</div>
@@ -271,7 +330,7 @@ export default function PoolScreen() {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 pb-4">
+            <div className="grid grid-cols-2 gap-3 pb-4 transition-all duration-300">
               {movies.map((movie: any) => (
                 <MoviePosterTile
                   key={movie.id}
@@ -281,9 +340,17 @@ export default function PoolScreen() {
                   rating={movie.rating}
                   suggestedBy={movie.suggestedBy}
                   contributorColors={contributorColors}
+                  contributorNames={contributorNames}
+                  onClick={() => handleMovieClick(movie.originalIndex)}
+                  selected={selectedMovieIndex === movie.originalIndex}
+                  onDelete={() => handleDeleteMovie(movie.originalIndex)}
                 />
               ))}
             </div>
+          )}
+          {/* Bottom fade gradient to indicate more content */}
+          {movies.length > 4 && (
+            <div className="fixed bottom-16 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />
           )}
         </div>
       </main>
@@ -331,81 +398,151 @@ export default function PoolScreen() {
         </button>
       </ActionSheet>
 
-      {/* Add Movie ActionSheet */}
+      {/* Add Movie ActionSheet (2-step flow) */}
       <ActionSheet
         isOpen={isAddMovieOpen}
         onClose={() => {
           setIsAddMovieOpen(false)
+          setAddMovieStep(1)
+          setSelectedContributorForMovie(null)
           setMovieTitle('')
-          setMovieContributorId('')
           setAddMovieError('')
+          setAddMovieStatus('idle')
         }}
         title="Add Movie"
       >
-        <div className="space-y-4">
-          {/* Contributor dropdown */}
-          <div>
-            <label className="block text-sm font-medium text-text-secondary mb-2">
-              Contributor
-            </label>
-            <select
-              value={movieContributorId}
-              onChange={(e) => {
-                setMovieContributorId(e.target.value)
-                setAddMovieError('')
-              }}
-              className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-            >
-              <option value="">Select a contributor</option>
-              {contributors.map((contributor: any) => (
-                <option key={contributor.id} value={contributor.id}>
-                  {contributor.name}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="relative overflow-x-hidden overflow-y-visible px-2 -mx-2">
+          <AnimatePresence mode="wait" initial={false}>
+            {addMovieStep === 1 ? (
+              <motion.div
+                key="step1"
+                initial={{ x: -300, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -300, opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                className="space-y-4"
+              >
+                {/* Step 1: Contributor Selection */}
+                <p className="text-sm text-text-secondary mb-4">
+                  Who's adding this movie?
+                </p>
 
-          {/* Movie title input */}
-          <div>
-            <label className="block text-sm font-medium text-text-secondary mb-2">
-              Movie Title
-            </label>
-            <input
-              ref={movieTitleInputRef}
-              type="text"
-              value={movieTitle}
-              onChange={(e) => {
-                setMovieTitle(e.target.value)
-                setAddMovieError('')
-              }}
-              placeholder="e.g. The Matrix"
-              className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleAddMovie()
-                }
-              }}
-            />
-          </div>
+                {/* Contributor Pills Grid */}
+                <div className="grid grid-cols-2 gap-3">
+                  {contributors.map((contributor: any) => (
+                    <button
+                      key={contributor.id}
+                      onClick={() => {
+                        setSelectedContributorForMovie(contributor.id)
+                        setAddMovieStep(2)
+                      }}
+                      className="flex items-center gap-3 p-4 rounded-xl bg-surface hover:bg-surface-elevated border border-border hover:border-accent transition-all group"
+                    >
+                      {/* Colored circle */}
+                      <div
+                        className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white font-semibold shadow-sm"
+                        style={{ backgroundColor: contributor.color }}
+                      >
+                        {contributor.name.charAt(0).toUpperCase()}
+                      </div>
+                      {/* Contributor name */}
+                      <span className="text-sm font-medium text-text-primary group-hover:text-accent transition-colors">
+                        {contributor.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="step2"
+                initial={{ x: 300, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: 300, opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                onAnimationComplete={() => {
+                  // Focus input when animation completes
+                  movieTitleInputRef.current?.focus()
+                }}
+                className="space-y-4"
+              >
+                {/* Step 2: Movie Title Entry */}
 
-          {/* Error message */}
-          {addMovieError && (
-            <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-              <X className="w-4 h-4 text-red-500 flex-shrink-0" />
-              <p className="text-sm text-red-500">{addMovieError}</p>
-            </div>
-          )}
+                {/* Selected Contributor Header */}
+                <div className="flex items-center justify-between p-3 bg-surface-elevated rounded-xl border border-border">
+                  <div className="flex items-center gap-3">
+                    {/* Colored circle */}
+                    <div
+                      className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-semibold shadow-sm"
+                      style={{
+                        backgroundColor:
+                          contributors.find((c: any) => c.id === selectedContributorForMovie)
+                            ?.color || '#3B82F6',
+                      }}
+                    >
+                      {contributors
+                        .find((c: any) => c.id === selectedContributorForMovie)
+                        ?.name.charAt(0)
+                        .toUpperCase()}
+                    </div>
+                    <span className="text-sm font-medium text-text-primary">
+                      {contributors.find((c: any) => c.id === selectedContributorForMovie)?.name}
+                    </span>
+                  </div>
+                  {/* Change button */}
+                  <button
+                    onClick={() => setAddMovieStep(1)}
+                    className="flex items-center gap-1 text-xs text-accent hover:text-accent-hover transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Change
+                  </button>
+                </div>
 
-          {/* Add button */}
-          <button
-            onClick={handleAddMovie}
-            disabled={addMovieStatus !== 'idle'}
-            className="w-full px-6 py-3 bg-accent hover:bg-accent-hover disabled:bg-surface disabled:text-text-tertiary text-white rounded-xl font-medium transition-colors"
-          >
-            {addMovieStatus === 'submitting' && 'Adding...'}
-            {addMovieStatus === 'success' && 'Added ✓'}
-            {addMovieStatus === 'idle' && 'Add Movie'}
-          </button>
+                {/* Movie Title Input */}
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Movie Title
+                  </label>
+                  <input
+                    ref={movieTitleInputRef}
+                    type="text"
+                    value={movieTitle}
+                    onChange={(e) => {
+                      setMovieTitle(e.target.value)
+                      setAddMovieError('')
+                    }}
+                    placeholder="e.g. The Matrix"
+                    className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleAddMovie()
+                      }
+                    }}
+                  />
+                </div>
+
+                {/* Error message */}
+                {addMovieError && (
+                  <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+                    <X className="w-4 h-4 text-red-500 flex-shrink-0" />
+                    <p className="text-sm text-red-500">{addMovieError}</p>
+                  </div>
+                )}
+
+                {/* Add button */}
+                <button
+                  onClick={handleAddMovie}
+                  disabled={addMovieStatus !== 'idle'}
+                  className="w-full px-6 py-3 bg-accent hover:bg-accent-hover disabled:bg-surface disabled:text-text-tertiary text-white rounded-xl font-medium transition-colors"
+                >
+                  {addMovieStatus === 'submitting' && 'Adding...'}
+                  {addMovieStatus === 'success' && 'Added ✓'}
+                  {addMovieStatus === 'idle' && 'Add Movie'}
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </ActionSheet>
 
@@ -416,51 +553,102 @@ export default function PoolScreen() {
           setIsAddContributorOpen(false)
           setContributorName('')
           setAddContributorError('')
+          setShareUrlCopied(false)
         }}
         title="Add Contributor"
       >
-        <div className="space-y-4">
-          {/* Contributor name input */}
-          <div>
-            <label className="block text-sm font-medium text-text-secondary mb-2">
-              Name
-            </label>
-            <input
-              ref={contributorNameInputRef}
-              type="text"
-              value={contributorName}
-              onChange={(e) => {
-                setContributorName(e.target.value)
-                setAddContributorError('')
-              }}
-              placeholder="e.g. Alice"
-              className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleAddContributor()
-                }
-              }}
-            />
+        <div className="space-y-6">
+          {/* Share URL Section */}
+          <div className="space-y-3">
+            <p className="text-sm text-text-secondary">
+              Share this room with someone
+            </p>
+
+            {/* Room Code Display */}
+            <div className="p-4 bg-surface-elevated rounded-xl border border-border">
+              <div className="text-xs text-text-tertiary mb-1">Room Code</div>
+              <div className="text-2xl font-bold text-text-primary tracking-wider font-mono">
+                {roomCode}
+              </div>
+            </div>
+
+            {/* Copy URL Button */}
+            <button
+              onClick={handleCopyShareUrl}
+              className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-surface hover:bg-surface-elevated border border-border hover:border-accent rounded-xl font-medium transition-colors"
+            >
+              {shareUrlCopied ? (
+                <>
+                  <Check className="w-5 h-5 text-green-500" />
+                  <span className="text-green-500">Link Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-5 h-5 text-text-secondary" />
+                  <span className="text-text-primary">Copy Share Link</span>
+                </>
+              )}
+            </button>
           </div>
 
-          {/* Error message */}
-          {addContributorError && (
-            <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-              <X className="w-4 h-4 text-red-500 flex-shrink-0" />
-              <p className="text-sm text-red-500">{addContributorError}</p>
+          {/* OR Divider */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border"></div>
             </div>
-          )}
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-surface-elevated text-text-tertiary">OR</span>
+            </div>
+          </div>
 
-          {/* Add button */}
-          <button
-            onClick={handleAddContributor}
-            disabled={addContributorStatus !== 'idle'}
-            className="w-full px-6 py-3 bg-accent hover:bg-accent-hover disabled:bg-surface disabled:text-text-tertiary text-white rounded-xl font-medium transition-colors"
-          >
-            {addContributorStatus === 'submitting' && 'Adding...'}
-            {addContributorStatus === 'success' && 'Added ✓'}
-            {addContributorStatus === 'idle' && 'Add Contributor'}
-          </button>
+          {/* Manual Add Section */}
+          <div className="space-y-4">
+            <p className="text-sm text-text-secondary">
+              Add contributor manually
+            </p>
+
+            {/* Contributor name input */}
+            <div>
+              <label className="block text-sm font-medium text-text-secondary mb-2">
+                Name
+              </label>
+              <input
+                ref={contributorNameInputRef}
+                type="text"
+                value={contributorName}
+                onChange={(e) => {
+                  setContributorName(e.target.value)
+                  setAddContributorError('')
+                }}
+                placeholder="e.g. Alice"
+                className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleAddContributor()
+                  }
+                }}
+              />
+            </div>
+
+            {/* Error message */}
+            {addContributorError && (
+              <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+                <X className="w-4 h-4 text-red-500 flex-shrink-0" />
+                <p className="text-sm text-red-500">{addContributorError}</p>
+              </div>
+            )}
+
+            {/* Add button */}
+            <button
+              onClick={handleAddContributor}
+              disabled={addContributorStatus !== 'idle'}
+              className="w-full px-6 py-3 bg-accent hover:bg-accent-hover disabled:bg-surface disabled:text-text-tertiary text-white rounded-xl font-medium transition-colors"
+            >
+              {addContributorStatus === 'submitting' && 'Adding...'}
+              {addContributorStatus === 'success' && 'Added ✓'}
+              {addContributorStatus === 'idle' && 'Add Contributor'}
+            </button>
+          </div>
         </div>
       </ActionSheet>
 

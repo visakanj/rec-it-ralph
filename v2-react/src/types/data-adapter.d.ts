@@ -51,22 +51,32 @@ export interface RoomHistoryItem {
   createdAt: number;
 }
 
-// DataAdapter class definition (minimal - core methods only)
+// DataAdapter class definition
 export interface DataAdapter {
   // Ready promise
   readyPromise: Promise<void>;
 
-  // Room management (Phase 0-1 methods)
+  // Room management (Phase 0-2)
   getRoomCode(): string | null;
   getRoomData(): RoomData | null;
+  fetchRoomData(roomCode: string): Promise<RoomData | null>;
   subscribeRoom(roomCode: string, callback: (data: RoomData) => void): () => void;
   createRoom(theme: string): Promise<string>;
   joinRoom(roomCode: string): Promise<boolean>;
   getRoomHistory(): RoomHistoryItem[];
+  getTheme(): string;
+
+  // Contributors (Phase 3)
+  addContributor(name: string): Contributor;
+  getContributors(): Contributor[];
+  removeContributor(contributorId: string): void;
+
+  // Movies (Phase 3)
+  addMovie(contributorId: string, title: string): Promise<Movie>;
+  getMoviePool(): Movie[];
+  removeMovie(movieIndex: number): void;
 
   // NOTE: Additional methods will be added in future phases:
-  // - getTheme(), addContributor(), removeContributor() (Phase 1)
-  // - addMovie(), getMoviePool(), removeMovie() (Phase 3)
   // - pickTonightMovie(), getTonightPick(), clearTonightPick() (Phase 4-5)
   // - markWatched(), getWatchedMovies(), undoWatched() (Phase 5-6)
   // - getInviteLink(), copyToClipboard() (Phase 7)

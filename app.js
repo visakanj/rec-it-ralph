@@ -457,8 +457,8 @@ class AppState {
             movies: [],
             color: CONTRIBUTOR_COLORS[this.data.contributors.length % CONTRIBUTOR_COLORS.length]
         };
-        
-        this.data.contributors.push(contributor);
+
+        this.data.contributors.unshift(contributor);
         this.save();
         return contributor;
     }
@@ -565,10 +565,12 @@ class AppState {
             this.save();
 
             // Fetch TMDB data asynchronously (enrichment happens after save, doesn't block return)
-            console.log('[AppState DEBUG] Checking TMDB: window.ui exists?', !!window.ui, 'tmdbService exists?', !!(window.ui && window.ui.tmdbService));
-            if (window.ui && window.ui.tmdbService) {
+            // Check for TMDB service in both v1 and v2 modes
+            const tmdbService = window.ui?.tmdbService || window.tmdbService;
+            console.log('[AppState DEBUG] Checking TMDB: window.ui exists?', !!window.ui, 'tmdbService exists?', !!tmdbService);
+            if (tmdbService) {
                 console.log('[AppState DEBUG] ✓ TMDB available, fetching asynchronously');
-                window.ui.tmdbService.getMovieData(originalTitle).then(tmdbData => {
+                tmdbService.getMovieData(originalTitle).then(tmdbData => {
                     if (tmdbData) {
                         console.log('TMDB: Adding tmdbData to movie:', originalTitle, tmdbData);
 

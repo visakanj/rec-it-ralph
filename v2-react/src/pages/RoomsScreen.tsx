@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { PlusCircle, Plus, LogIn, ChevronRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { AppBar } from '../components/AppBar'
@@ -11,6 +11,57 @@ export default function RoomsScreen() {
   const navigate = useNavigate()
   const { adapter, isReady } = useAdapter()
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false)
+  const [roomsWithCounts, setRoomsWithCounts] = useState<any[]>([])
+
+  // Fetch member counts for each room
+  useEffect(() => {
+    if (!isReady || !adapter) return
+
+    // Get room history from adapter
+    const roomHistory = adapter.getRoomHistory()
+
+    // Initialize rooms with placeholder data
+    const initialRooms = roomHistory.map((room: any) => ({
+      id: room.roomCode,
+      name: room.theme,
+      memberCount: 0,
+      active: false,
+      lastActive: new Date(room.lastVisited).toLocaleDateString()
+    }))
+    setRoomsWithCounts(initialRooms)
+
+    // Fetch actual room data to get contributor counts
+    const fetchRoomCounts = async () => {
+      const updatedRooms = await Promise.all(
+        roomHistory.map(async (room: any) => {
+          try {
+            const roomData = await adapter.fetchRoomData(room.roomCode)
+            const memberCount = roomData?.contributors?.length || 0
+
+            return {
+              id: room.roomCode,
+              name: room.theme,
+              memberCount,
+              active: false,
+              lastActive: new Date(room.lastVisited).toLocaleDateString()
+            }
+          } catch (error) {
+            console.error(`Failed to fetch room ${room.roomCode}:`, error)
+            return {
+              id: room.roomCode,
+              name: room.theme,
+              memberCount: 0,
+              active: false,
+              lastActive: new Date(room.lastVisited).toLocaleDateString()
+            }
+          }
+        })
+      )
+      setRoomsWithCounts(updatedRooms)
+    }
+
+    fetchRoomCounts()
+  }, [isReady, adapter])
 
   // Show loading state while adapter initializes
   if (!isReady) {
@@ -24,16 +75,6 @@ export default function RoomsScreen() {
       </div>
     )
   }
-
-  // Get room history from adapter and map to MagicPatterns format
-  const roomHistory = adapter.getRoomHistory()
-  const rooms = roomHistory.map((room: any) => ({
-    id: room.roomCode,
-    name: room.theme,
-    memberCount: 0, // TODO: Fetch actual member count in future phase
-    active: false, // TODO: Determine if room is active
-    lastActive: new Date(room.lastVisited).toLocaleDateString()
-  }))
 
   const handleRoomClick = async (roomCode: string) => {
     // Join the room
@@ -77,14 +118,14 @@ export default function RoomsScreen() {
           </p>
         </div>
 
-        {rooms.length === 0 ? (
+        {roomsWithCounts.length === 0 ? (
           <div className="text-center py-12 text-text-tertiary">
             <p className="mb-2">No rooms yet</p>
             <p className="text-sm">Create or join a room to get started</p>
           </div>
         ) : (
           <div className="space-y-4">
-            {rooms.map((room: any) => (
+            {roomsWithCounts.map((room: any) => (
               <div key={room.id} onClick={() => handleRoomClick(room.id)}>
                 <RoomCard {...room} />
               </div>
