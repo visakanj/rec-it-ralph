@@ -71,6 +71,8 @@ export default function PoolScreen() {
 
   // Detect auto-join from share URL and show name prompt
   useEffect(() => {
+    if (!isReady || !adapter) return // Wait for adapter to be ready
+
     const state = location.state as { showNamePrompt?: boolean; autoJoined?: boolean } | null
 
     if (state?.showNamePrompt && state?.autoJoined) {
@@ -80,7 +82,16 @@ export default function PoolScreen() {
       if (savedName) {
         // Auto-add contributor with saved name
         console.log('[PoolScreen] Auto-adding contributor with saved name:', savedName)
-        handleAddContributorWithName(savedName)
+
+        // Add contributor directly (inline to avoid dependency issues)
+        try {
+          adapter.addContributor(savedName)
+          console.log('[PoolScreen] Auto-join contributor added:', savedName)
+        } catch (error) {
+          console.error('[PoolScreen] Failed to auto-add contributor:', error)
+          // Show prompt as fallback
+          setShowAutoJoinNamePrompt(true)
+        }
       } else {
         // Show name prompt
         console.log('[PoolScreen] Showing auto-join name prompt')
@@ -90,7 +101,7 @@ export default function PoolScreen() {
       // Clear navigation state to prevent re-showing on refresh
       window.history.replaceState({}, '')
     }
-  }, [location])
+  }, [location, isReady, adapter])
 
   // Loading state
   if (!isReady) {

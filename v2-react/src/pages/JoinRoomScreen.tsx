@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { AppBar } from '../components/AppBar'
 import { BottomNav } from '../components/BottomNav'
@@ -105,7 +105,9 @@ export default function JoinRoomScreen() {
   }
 
   // Auto-join from URL parameter
-  const handleAutoJoinFromURL = async (code: string) => {
+  const handleAutoJoinFromURL = useCallback(async (code: string) => {
+    if (!adapter) return
+
     setLoading(true)
 
     try {
@@ -141,12 +143,12 @@ export default function JoinRoomScreen() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [adapter, navigate])
 
   // Detect URL parameter and auto-join
   useEffect(() => {
     const codeParam = searchParams.get('code')
-    if (codeParam && isReady) {
+    if (codeParam && isReady && adapter) {
       const uppercased = codeParam.toUpperCase()
 
       // Validate code format
@@ -159,8 +161,7 @@ export default function JoinRoomScreen() {
       // Auto-join the room
       handleAutoJoinFromURL(uppercased)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, isReady])
+  }, [searchParams, isReady, adapter, handleAutoJoinFromURL])
 
   return (
     <div className="min-h-screen bg-background pb-28 animate-fade-in">
