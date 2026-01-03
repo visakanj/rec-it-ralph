@@ -132,14 +132,14 @@ export default function TonightScreen() {
     : null
 
   return (
-    <div className="h-screen bg-background pb-28 animate-fade-in flex flex-col">
+    <div className="min-h-screen bg-background pb-28 animate-fade-in">
       {/* No back arrow on Tonight tab */}
       <AppBar title="Tonight's Pick" />
 
-      <main className="flex-1 pt-16 px-4 max-w-md mx-auto w-full flex flex-col pb-4">
-        <div className="bg-surface rounded-2xl overflow-hidden border border-border shadow-xl flex flex-col flex-1">
+      <main className="pt-16 px-4 max-w-md mx-auto pb-4">
+        <div className="bg-surface rounded-2xl overflow-hidden border border-border shadow-xl">
           {/* Movie Poster with Contributor Pills Overlay */}
-          <div className="relative w-full flex-shrink-0">
+          <div className="relative w-full">
             {posterUrl ? (
               <img
                 src={posterUrl}
@@ -177,9 +177,9 @@ export default function TonightScreen() {
           </div>
 
           {/* Movie Info */}
-          <div className="p-4 flex flex-col flex-1 overflow-y-auto">
+          <div className="p-4">
             {/* Title and Meta */}
-            <div className="mb-3 flex-shrink-0">
+            <div className="mb-3">
               <h2 className="text-2xl font-bold text-text-primary mb-1">
                 {tonightPick.title}
               </h2>
@@ -248,7 +248,7 @@ export default function TonightScreen() {
             )} */}
 
             {/* Action Buttons */}
-            <div className="flex flex-col gap-2 flex-shrink-0">
+            <div className="flex flex-col gap-2">
               <button
                 onClick={handleMarkAsWatched}
                 disabled={isMarkingWatched}
