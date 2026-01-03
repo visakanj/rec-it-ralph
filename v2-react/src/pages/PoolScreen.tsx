@@ -118,7 +118,7 @@ export default function PoolScreen() {
       : moviePool.filter((m: any) => m.suggestedBy.includes(selectedContributor))
 
   // Map v1 movie shape to component props
-  const movies = filteredMovies.map((movie: any, index: number) => ({
+  const movies = filteredMovies.map((movie: any) => ({
     id: movie.title,
     title: movie.title,
     year: movie.tmdbData?.releaseDate?.substring(0, 4) || '',
