@@ -11,9 +11,9 @@ export default defineConfig({
       name: 'serve-parent-files',
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
-          // Serve /v2-react-build/app.js from parent directory
-          if (req.url === '/v2-react-build/app.js') {
-            const filePath = path.resolve(__dirname, '../app.js')
+          // Serve /app.js from public directory (copied from parent)
+          if (req.url === '/app.js') {
+            const filePath = path.resolve(__dirname, 'public/app.js')
             if (fs.existsSync(filePath)) {
               res.setHeader('Content-Type', 'application/javascript')
               const stat = fs.statSync(filePath)
@@ -26,9 +26,9 @@ export default defineConfig({
               return
             }
           }
-          // Serve /v2-react-build/v2/data-adapter.js from parent directory
-          if (req.url === '/v2-react-build/v2/data-adapter.js') {
-            const filePath = path.resolve(__dirname, '../v2/data-adapter.js')
+          // Serve /v2/data-adapter.js from public directory
+          if (req.url === '/v2/data-adapter.js') {
+            const filePath = path.resolve(__dirname, 'public/v2/data-adapter.js')
             if (fs.existsSync(filePath)) {
               res.setHeader('Content-Type', 'application/javascript')
               const stat = fs.statSync(filePath)

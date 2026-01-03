@@ -47,11 +47,12 @@
     </script>
 
     <!-- Load v1 core (AppState, TMDBService) -->
-    <!-- Files copied to public/ during build, served from /v2-react-build/ -->
-    <script src="/v2-react-build/app.js"></script>
+    <!-- Files copied to public/ during build -->
+    <!-- In dev: served from /app.js, in prod: served from /v2-react-build/app.js -->
+    <script src="/app.js"></script>
 
     <!-- Load DataAdapter (reuse existing) -->
-    <script src="/v2-react-build/v2/data-adapter.js"></script>
+    <script src="/v2/data-adapter.js"></script>
 
     <!-- Verify adapter ready -->
     <script>
