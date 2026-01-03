@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AppBar } from '../components/AppBar'
 import { BottomNav } from '../components/BottomNav'
@@ -19,9 +19,20 @@ export default function TonightScreen() {
 
   // const [streamingProviders, setStreamingProviders] = useState<StreamingProvider[]>([])
   const [isMarkingWatched, setIsMarkingWatched] = useState(false)
+  const [isOverviewExpanded, setIsOverviewExpanded] = useState(false)
+  const [showExpandButton, setShowExpandButton] = useState(false)
+  const overviewRef = useRef<HTMLParagraphElement>(null)
 
   const tonightPick = roomData?.tonightPick
   const contributors = roomData?.contributors || []
+
+  // Check if overview text is truncated (exceeds 5 lines)
+  useEffect(() => {
+    if (overviewRef.current) {
+      const isTruncated = overviewRef.current.scrollHeight > overviewRef.current.clientHeight
+      setShowExpandButton(isTruncated)
+    }
+  }, [tonightPick?.tmdbData?.overview])
 
   // Redirect to /pick if no movie picked
   useEffect(() => {
@@ -166,9 +177,9 @@ export default function TonightScreen() {
           </div>
 
           {/* Movie Info */}
-          <div className="p-4 flex flex-col flex-1">
+          <div className="p-4 flex flex-col flex-1 overflow-y-auto">
             {/* Title and Meta */}
-            <div className="mb-3">
+            <div className="mb-3 flex-shrink-0">
               <h2 className="text-2xl font-bold text-text-primary mb-1">
                 {tonightPick.title}
               </h2>
@@ -185,10 +196,35 @@ export default function TonightScreen() {
 
             {/* Overview/Premise */}
             {tonightPick.tmdbData?.overview && (
-              <div className="mb-4 flex-1 overflow-y-auto">
-                <p className="text-text-secondary text-sm leading-relaxed">
+              <div className="mb-4">
+                <p
+                  ref={overviewRef}
+                  className={`text-text-secondary text-sm leading-relaxed ${isOverviewExpanded ? '' : 'line-clamp-5'}`}
+                >
                   {tonightPick.tmdbData.overview}
                 </p>
+                {showExpandButton && (
+                  <button
+                    onClick={() => setIsOverviewExpanded(!isOverviewExpanded)}
+                    className="mt-2 text-accent text-sm font-medium flex items-center gap-1 hover:text-accent-hover transition-colors"
+                  >
+                    {isOverviewExpanded ? (
+                      <>
+                        Show less
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="18 15 12 9 6 15" />
+                        </svg>
+                      </>
+                    ) : (
+                      <>
+                        Show more
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             )}
 
