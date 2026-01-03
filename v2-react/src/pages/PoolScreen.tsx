@@ -434,7 +434,7 @@ export default function PoolScreen() {
           )}
           {/* Bottom fade gradient to indicate more content */}
           {movies.length > 4 && (
-            <div className="fixed bottom-16 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+            <div className="fixed bottom-[60px] left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />
           )}
         </div>
       </main>
