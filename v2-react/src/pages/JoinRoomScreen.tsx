@@ -12,19 +12,6 @@ export default function JoinRoomScreen() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Show loading state while adapter initializes
-  if (!isReady) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="text-center">
-          <div className="text-6xl mb-4">⏳</div>
-          <h1 className="text-2xl font-bold mb-2">Loading...</h1>
-          <p className="text-text-secondary">Connecting to Firebase</p>
-        </div>
-      </div>
-    )
-  }
-
   const validateRoomCode = (code: string): string | null => {
     // Required: non-empty code
     if (!code) {
@@ -162,6 +149,19 @@ export default function JoinRoomScreen() {
       handleAutoJoinFromURL(uppercased)
     }
   }, [searchParams, isReady, adapter, handleAutoJoinFromURL])
+
+  // Show loading state while adapter initializes
+  if (!isReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="text-center">
+          <div className="text-6xl mb-4">⏳</div>
+          <h1 className="text-2xl font-bold mb-2">Loading...</h1>
+          <p className="text-text-secondary">Connecting to Firebase</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background pb-28 animate-fade-in">
