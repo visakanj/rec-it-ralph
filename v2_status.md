@@ -459,7 +459,7 @@ _To be populated during implementation_
 
 **PR #4**: Phase 3 - PoolScreen
 
-**Status**: Ready to start
+**Status**: In Progress
 **Prerequisites**: ✅ Phase 2 complete & merged to main
 
 **Scope** (from plan):
@@ -468,6 +468,13 @@ _To be populated during implementation_
 - Display contributors with filter chips
 - Add movie/contributor flows with ActionSheets
 - Real-time Firebase sync verification
+
+**Polish & UX Improvements**:
+- Fixed contributor chip clipping issue (removed scale-105 from active state, added overflow-y-visible)
+- Auto-focus input on "Add Contributor" sheet open and after success
+- Success confirmation for Add Contributor/Movie ("Adding..." → "Added ✓", sheet stays open)
+- New contributors appear leftmost (most-recent-first ordering)
+- Removed "+ Add" CTA from contributor scroll; add contributor via top-right "+" only
 
 ---
 
