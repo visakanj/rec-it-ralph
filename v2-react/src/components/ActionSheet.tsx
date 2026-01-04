@@ -5,12 +5,16 @@ interface ActionSheetProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
+  icon?: React.ReactNode;
+  subtitle?: string;
   children: React.ReactNode;
 }
 export function ActionSheet({
   isOpen,
   onClose,
   title,
+  icon,
+  subtitle,
   children
 }: ActionSheetProps) {
   // Prevent body scroll when sheet is open
@@ -55,14 +59,42 @@ export function ActionSheet({
             </div>
 
             <div className="px-6 pb-28 pt-2">
-              {title && <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-text-primary">
-                    {title}
-                  </h3>
-                  <button onClick={onClose} className="p-1 text-text-tertiary hover:text-text-secondary transition-colors rounded-full hover:bg-surface">
-                    <X size={20} />
-                  </button>
-                </div>}
+              {title && (
+                icon ? (
+                  // New layout with icon
+                  <div className="mb-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="text-accent">
+                        {icon}
+                      </div>
+                      <button
+                        onClick={onClose}
+                        className="p-2 text-text-tertiary hover:text-text-secondary transition-colors rounded-full bg-text-tertiary/10 hover:bg-text-tertiary/20"
+                      >
+                        <X size={20} />
+                      </button>
+                    </div>
+                    <h3 className="text-2xl font-bold text-text-primary mb-2">
+                      {title}
+                    </h3>
+                    {subtitle && (
+                      <p className="text-sm text-text-secondary">
+                        {subtitle}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  // Original layout without icon
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-text-primary">
+                      {title}
+                    </h3>
+                    <button onClick={onClose} className="p-1 text-text-tertiary hover:text-text-secondary transition-colors rounded-full hover:bg-surface">
+                      <X size={20} />
+                    </button>
+                  </div>
+                )
+              )}
 
               <div className="space-y-2">{children}</div>
             </div>

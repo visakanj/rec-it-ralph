@@ -25,7 +25,7 @@ export default function PoolScreen() {
   const [selectedContributor, setSelectedContributor] = useState<string>('all')
   const [isAddMovieOpen, setIsAddMovieOpen] = useState(false)
   const [isAddContributorOpen, setIsAddContributorOpen] = useState(false)
-  const [isMainActionOpen, setIsMainActionOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const [selectedMovieIndex, setSelectedMovieIndex] = useState<number | null>(null)
 
   // Add movie form state (2-step flow)
@@ -46,17 +46,6 @@ export default function PoolScreen() {
   const [autoJoinName, setAutoJoinName] = useState('')
   const [autoJoinNameError, setAutoJoinNameError] = useState('')
   const [isAddingAutoJoinContributor, setIsAddingAutoJoinContributor] = useState(false)
-
-  // Auto-focus contributor input when sheet opens
-  useEffect(() => {
-    if (isAddContributorOpen) {
-      // Delay to allow ActionSheet animation to complete
-      const timer = setTimeout(() => {
-        contributorNameInputRef.current?.focus()
-      }, 100)
-      return () => clearTimeout(timer)
-    }
-  }, [isAddContributorOpen])
 
   // Auto-focus movie title input when reaching Step 2
   useEffect(() => {
@@ -340,20 +329,73 @@ export default function PoolScreen() {
     handleAddContributorWithName(autoJoinName)
   }
 
+  // Floating FAB handlers
+  const handleOpenAddMovieSheet = () => {
+    setIsOpen(false)
+    setIsAddMovieOpen(true)
+  }
+
+  const handleOpenAddContributorSheet = () => {
+    setIsOpen(false)
+    setIsAddContributorOpen(true)
+  }
+
+  const toggleOpen = () => setIsOpen(!isOpen)
+
+  // Animation variants for floating FAB
+  const fabVariants = {
+    closed: {
+      rotate: 0
+    },
+    open: {
+      rotate: 45
+    }
+  }
+
+  const menuVariants = {
+    closed: {
+      opacity: 0,
+      y: 20,
+      scale: 0.8,
+      transition: {
+        duration: 0.2
+      }
+    },
+    open: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        delay: i * 0.05,
+        type: 'spring' as const,
+        stiffness: 400,
+        damping: 25
+      }
+    })
+  }
+
+  const labelVariants = {
+    closed: {
+      opacity: 0,
+      x: 20
+    },
+    open: (i: number) => ({
+      opacity: 1,
+      x: 0,
+      transition: {
+        delay: i * 0.05 + 0.1,
+        duration: 0.2
+      }
+    })
+  }
+
   return (
-    <div className="min-h-screen bg-background pb-28 animate-fade-in">
+    <div className="min-h-screen bg-background pb-28 animate-fade-in relative">
       {/* Main pool content - blur when auto-join name prompt is shown */}
       <div className={showAutoJoinNamePrompt ? 'filter blur-sm pointer-events-none' : ''}>
         <AppBar
           title={theme || 'Movie Pool'}
-          action={
-            <button
-              onClick={() => setIsMainActionOpen(true)}
-              className="p-2 hover:bg-surface rounded-full transition-colors"
-            >
-              <Plus className="w-6 h-6 text-text-primary" />
-            </button>
-          }
+          action={<></>}
         />
 
       <main className="pt-20">
@@ -439,48 +481,88 @@ export default function PoolScreen() {
         </div>
       </main>
 
-      {/* Main action sheet - Add Movie or Add Contributor */}
-      <ActionSheet
-        isOpen={isMainActionOpen}
-        onClose={() => setIsMainActionOpen(false)}
-        title="Add to Pool"
-      >
-        <button
-          onClick={() => {
-            setIsMainActionOpen(false)
-            setIsAddMovieOpen(true)
-          }}
-          className="w-full flex items-center p-4 rounded-2xl hover:bg-surface active:bg-surface-elevated transition-colors group text-left"
-        >
-          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-surface flex items-center justify-center text-accent group-hover:bg-surface-elevated transition-all border border-transparent group-hover:border-border-highlight">
-            <Film className="w-6 h-6" />
-          </div>
-          <div className="ml-4 flex-1">
-            <div className="font-semibold text-text-primary text-base">Add Movie</div>
-            <div className="text-sm text-text-secondary mt-0.5">
-              Add a movie to your pool
-            </div>
-          </div>
-        </button>
+      {/* Backdrop */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsOpen(false)}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+          />
+        )}
+      </AnimatePresence>
 
-        <button
-          onClick={() => {
-            setIsMainActionOpen(false)
-            setIsAddContributorOpen(true)
-          }}
-          className="w-full flex items-center p-4 rounded-2xl hover:bg-surface active:bg-surface-elevated transition-colors group text-left"
+      {/* Floating Action Button Group */}
+      <div className="fixed bottom-[100px] right-6 z-50 flex flex-col items-end gap-4">
+        <AnimatePresence>
+          {isOpen && (
+            <>
+              {/* Add Movie Option */}
+              <div className="flex items-center gap-4 pr-1">
+                <motion.span
+                  custom={1}
+                  variants={labelVariants}
+                  initial="closed"
+                  animate="open"
+                  exit="closed"
+                  className="text-white font-bold text-base drop-shadow-md whitespace-nowrap"
+                >
+                  Add movie
+                </motion.span>
+                <motion.button
+                  custom={1}
+                  variants={menuVariants}
+                  initial="closed"
+                  animate="open"
+                  exit="closed"
+                  onClick={handleOpenAddMovieSheet}
+                  className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center text-white shadow-xl hover:bg-white/20 transition-colors"
+                >
+                  <Film size={24} />
+                </motion.button>
+              </div>
+
+              {/* Add Contributor Option */}
+              <div className="flex items-center gap-4 pr-1">
+                <motion.span
+                  custom={0}
+                  variants={labelVariants}
+                  initial="closed"
+                  animate="open"
+                  exit="closed"
+                  className="text-white font-bold text-base drop-shadow-md whitespace-nowrap"
+                >
+                  Share room
+                </motion.span>
+                <motion.button
+                  custom={0}
+                  variants={menuVariants}
+                  initial="closed"
+                  animate="open"
+                  exit="closed"
+                  onClick={handleOpenAddContributorSheet}
+                  className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center text-white shadow-xl hover:bg-white/20 transition-colors"
+                >
+                  <UserPlus size={24} />
+                </motion.button>
+              </div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Main Toggle Button */}
+        <motion.button
+          onClick={toggleOpen}
+          animate={isOpen ? 'open' : 'closed'}
+          variants={fabVariants}
+          className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-2xl border border-white/30 flex items-center justify-center text-white shadow-2xl hover:bg-white/20 transition-colors z-50"
+          whileTap={{ scale: 0.95 }}
         >
-          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-surface flex items-center justify-center text-accent group-hover:bg-surface-elevated transition-all border border-transparent group-hover:border-border-highlight">
-            <UserPlus className="w-6 h-6" />
-          </div>
-          <div className="ml-4 flex-1">
-            <div className="font-semibold text-text-primary text-base">Add Contributor</div>
-            <div className="text-sm text-text-secondary mt-0.5">
-              Invite someone to suggest movies
-            </div>
-          </div>
-        </button>
-      </ActionSheet>
+          <Plus size={32} />
+        </motion.button>
+      </div>
 
       {/* Add Movie ActionSheet (2-step flow) */}
       <ActionSheet
@@ -493,9 +575,10 @@ export default function PoolScreen() {
           setAddMovieError('')
           setAddMovieStatus('idle')
         }}
-        title="Add Movie"
+        title={addMovieStep === 1 ? "Who's adding this movie?" : "Add movie"}
+        icon={<Film size={28} />}
       >
-        <div className="relative overflow-x-hidden overflow-y-visible px-2 -mx-2">
+        <div className="relative overflow-x-hidden overflow-y-visible px-2 -mx-2 min-h-[200px]">
           <AnimatePresence mode="wait" initial={false}>
             {addMovieStep === 1 ? (
               <motion.div
@@ -507,9 +590,6 @@ export default function PoolScreen() {
                 className="space-y-4"
               >
                 {/* Step 1: Contributor Selection */}
-                <p className="text-sm text-text-secondary mb-4">
-                  Who's adding this movie?
-                </p>
 
                 {/* Contributor Pills Grid */}
                 <div className="grid grid-cols-2 gap-3">
@@ -639,15 +719,12 @@ export default function PoolScreen() {
           setAddContributorError('')
           setShareUrlCopied(false)
         }}
-        title="Add Contributor"
+        title="Share room"
+        icon={<UserPlus size={28} />}
       >
         <div className="space-y-6">
           {/* Share URL Section */}
           <div className="space-y-3">
-            <p className="text-sm text-text-secondary">
-              Share this room with someone
-            </p>
-
             {/* Room Code Display */}
             <div className="p-4 bg-surface-elevated rounded-xl border border-border">
               <div className="text-xs text-text-tertiary mb-1">Room Code</div>
