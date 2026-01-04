@@ -872,7 +872,7 @@ export default function PoolScreen() {
           setIsMovieDetailsOpen(false)
           setSelectedMovieForDetails(null)
         }}
-        title={selectedMovieForDetails?.title || 'Movie Details'}
+        title="Movie Details"
         icon={<Film size={28} />}
       >
         {selectedMovieForDetails && (
@@ -896,6 +896,11 @@ export default function PoolScreen() {
 
               {/* Details on right */}
               <div className="flex-1 space-y-3">
+                {/* Title */}
+                <h3 className="text-lg font-bold text-text-primary">
+                  {selectedMovieForDetails.title}
+                </h3>
+
                 {/* Year */}
                 {selectedMovieForDetails.year && (
                   <p className="text-sm text-text-secondary">
