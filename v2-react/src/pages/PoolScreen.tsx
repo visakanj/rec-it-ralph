@@ -578,7 +578,7 @@ export default function PoolScreen() {
         title={addMovieStep === 1 ? "Who's adding this movie?" : "Add movie"}
         icon={<Film size={28} />}
       >
-        <div className="relative overflow-x-hidden overflow-y-visible px-2 -mx-2 min-h-[200px]">
+        <div className="relative overflow-x-hidden overflow-y-visible px-2 -mx-2">
           <AnimatePresence mode="wait" initial={false}>
             {addMovieStep === 1 ? (
               <motion.div
@@ -587,7 +587,7 @@ export default function PoolScreen() {
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: -300, opacity: 0 }}
                 transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                className="space-y-4"
+                className="space-y-4 h-[280px]"
               >
                 {/* Step 1: Contributor Selection */}
 
@@ -628,7 +628,7 @@ export default function PoolScreen() {
                   // Focus input when animation completes
                   movieTitleInputRef.current?.focus()
                 }}
-                className="space-y-4"
+                className="space-y-4 h-[280px]"
               >
                 {/* Step 2: Movie Title Entry */}
 
