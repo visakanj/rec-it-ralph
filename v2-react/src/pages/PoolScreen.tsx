@@ -557,7 +557,11 @@ export default function PoolScreen() {
           onClick={toggleOpen}
           animate={isOpen ? 'open' : 'closed'}
           variants={fabVariants}
-          className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-2xl border border-white/30 flex items-center justify-center text-white shadow-2xl hover:bg-white/20 transition-colors z-50"
+          className={`w-16 h-16 rounded-full flex items-center justify-center text-white shadow-2xl transition-colors z-50 ${
+            isOpen
+              ? 'bg-white/10 backdrop-blur-2xl border border-white/30 hover:bg-white/20'
+              : 'bg-accent hover:bg-accent-hover'
+          }`}
           whileTap={{ scale: 0.95 }}
         >
           <Plus size={32} />
