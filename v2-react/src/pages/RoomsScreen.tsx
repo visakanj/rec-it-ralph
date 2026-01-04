@@ -212,7 +212,7 @@ export default function RoomsScreen() {
                   animate="open"
                   exit="closed"
                   onClick={handleCreateRoom}
-                  className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center text-white shadow-xl hover:bg-white/20 transition-colors"
+                  className="w-14 h-14 rounded-full bg-accent flex items-center justify-center text-white shadow-xl hover:bg-accent-hover transition-colors"
                 >
                   <PlusCircle size={24} />
                 </motion.button>
@@ -237,7 +237,7 @@ export default function RoomsScreen() {
                   animate="open"
                   exit="closed"
                   onClick={handleJoinRoom}
-                  className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center text-white shadow-xl hover:bg-white/20 transition-colors"
+                  className="w-14 h-14 rounded-full bg-accent flex items-center justify-center text-white shadow-xl hover:bg-accent-hover transition-colors"
                 >
                   <LogIn size={24} />
                 </motion.button>
