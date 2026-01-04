@@ -26,7 +26,8 @@ export default function PoolScreen() {
   const [isAddMovieOpen, setIsAddMovieOpen] = useState(false)
   const [isAddContributorOpen, setIsAddContributorOpen] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
-  const [selectedMovieIndex, setSelectedMovieIndex] = useState<number | null>(null)
+  const [isMovieDetailsOpen, setIsMovieDetailsOpen] = useState(false)
+  const [selectedMovieForDetails, setSelectedMovieForDetails] = useState<any>(null)
 
   // Add movie form state (2-step flow)
   const [addMovieStep, setAddMovieStep] = useState<1 | 2>(1)
@@ -260,13 +261,11 @@ export default function PoolScreen() {
 
   // Handle movie poster click
   const handleMovieClick = (movieIndex: number) => {
-    setSelectedMovieIndex(selectedMovieIndex === movieIndex ? null : movieIndex)
-  }
-
-  // Handle delete movie
-  const handleDeleteMovie = (movieIndex: number) => {
-    adapter.removeMovie(movieIndex)
-    setSelectedMovieIndex(null)
+    const movie = movies.find((m: any) => m.originalIndex === movieIndex)
+    if (movie) {
+      setSelectedMovieForDetails(movie)
+      setIsMovieDetailsOpen(true)
+    }
   }
 
   // Handle copy share URL
@@ -468,8 +467,6 @@ export default function PoolScreen() {
                   contributorColors={contributorColors}
                   contributorNames={contributorNames}
                   onClick={() => handleMovieClick(movie.originalIndex)}
-                  selected={selectedMovieIndex === movie.originalIndex}
-                  onDelete={() => handleDeleteMovie(movie.originalIndex)}
                 />
               ))}
             </div>
@@ -866,6 +863,80 @@ export default function PoolScreen() {
             {isAddingAutoJoinContributor ? 'Adding...' : 'Continue'}
           </button>
         </div>
+      </ActionSheet>
+
+      {/* Movie Details ActionSheet */}
+      <ActionSheet
+        isOpen={isMovieDetailsOpen}
+        onClose={() => {
+          setIsMovieDetailsOpen(false)
+          setSelectedMovieForDetails(null)
+        }}
+        title={selectedMovieForDetails?.title || 'Movie Details'}
+        icon={<Film size={28} />}
+      >
+        {selectedMovieForDetails && (
+          <div className="space-y-6">
+            {/* Movie poster and info side by side */}
+            <div className="flex gap-4">
+              {/* Poster on left */}
+              <div className="flex-shrink-0 w-28 h-40 rounded-lg overflow-hidden bg-surface">
+                {selectedMovieForDetails.imageUrl ? (
+                  <img
+                    src={selectedMovieForDetails.imageUrl}
+                    alt={selectedMovieForDetails.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-text-tertiary">
+                    <Film size={32} />
+                  </div>
+                )}
+              </div>
+
+              {/* Details on right */}
+              <div className="flex-1 space-y-3">
+                {/* Year */}
+                {selectedMovieForDetails.year && (
+                  <p className="text-sm text-text-secondary">
+                    {selectedMovieForDetails.year}
+                  </p>
+                )}
+
+                {/* Premise (placeholder) */}
+                <div>
+                  <h4 className="text-sm font-semibold text-text-primary mb-1">Synopsis</h4>
+                  <p className="text-sm text-text-secondary leading-relaxed">
+                    An epic tale of adventure, drama, and unexpected twists. Join our heroes as they navigate through challenges and discover what it truly means to overcome adversity.
+                  </p>
+                </div>
+
+                {/* IMDb Rating */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-text-primary">IMDb:</span>
+                  <span className="text-sm text-accent font-semibold">
+                    {selectedMovieForDetails.rating || '7.5'}/10
+                  </span>
+                </div>
+
+                {/* Streaming Providers (placeholder) */}
+                <div>
+                  <h4 className="text-sm font-semibold text-text-primary mb-2">Watch on</h4>
+                  <div className="flex gap-2 flex-wrap">
+                    {['Netflix', 'Prime Video', 'Hulu'].map((provider) => (
+                      <div
+                        key={provider}
+                        className="px-3 py-1.5 bg-surface-elevated rounded-lg text-xs font-medium text-text-primary border border-border"
+                      >
+                        {provider}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </ActionSheet>
 
       <BottomNav />
