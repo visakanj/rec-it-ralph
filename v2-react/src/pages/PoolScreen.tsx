@@ -7,6 +7,7 @@ import { BottomNav } from '../components/BottomNav'
 import { ContributorChip } from '../components/ContributorChip'
 import { MoviePosterTile } from '../components/MoviePosterTile'
 import { ActionSheet } from '../components/ActionSheet'
+import { MovieDetailsSheet } from '../components/MovieDetailsSheet'
 import { useAdapter } from '../context/AdapterContext'
 import { useRoom } from '../hooks/useRoom'
 
@@ -170,6 +171,7 @@ export default function PoolScreen() {
       ? `https://image.tmdb.org/t/p/w342${movie.tmdbData.posterPath}`
       : '',
     rating: movie.tmdbData?.voteAverage?.toFixed(1) || '',
+    overview: movie.tmdbData?.overview || '',
     suggestedBy: movie.suggestedBy,
     originalIndex: moviePool.findIndex((m: any) => m.title === movie.title && m.addedAt === movie.addedAt)
   }))
@@ -279,6 +281,18 @@ export default function PoolScreen() {
       setSelectedMovieForDetails(movie)
       setIsMovieDetailsOpen(true)
     }
+  }
+
+  // Handle remove movie
+  const handleRemoveMovie = () => {
+    if (!selectedMovieForDetails || !adapter) return
+
+    console.log('[PoolScreen] Removing movie:', selectedMovieForDetails.title)
+    adapter.removeMovie(selectedMovieForDetails.originalIndex)
+
+    // Close sheet
+    setIsMovieDetailsOpen(false)
+    setSelectedMovieForDetails(null)
   }
 
   // Handle copy share URL
@@ -878,84 +892,17 @@ export default function PoolScreen() {
         </div>
       </ActionSheet>
 
-      {/* Movie Details ActionSheet */}
-      <ActionSheet
+      {/* Movie Details Sheet */}
+      <MovieDetailsSheet
         isOpen={isMovieDetailsOpen}
         onClose={() => {
           setIsMovieDetailsOpen(false)
           setSelectedMovieForDetails(null)
         }}
-        title="Movie Details"
-        icon={<Film size={28} />}
-      >
-        {selectedMovieForDetails && (
-          <div className="space-y-6">
-            {/* Movie poster and info side by side */}
-            <div className="flex gap-4">
-              {/* Poster on left */}
-              <div className="flex-shrink-0 w-28 h-40 rounded-lg overflow-hidden bg-surface">
-                {selectedMovieForDetails.imageUrl ? (
-                  <img
-                    src={selectedMovieForDetails.imageUrl}
-                    alt={selectedMovieForDetails.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-text-tertiary">
-                    <Film size={32} />
-                  </div>
-                )}
-              </div>
-
-              {/* Details on right */}
-              <div className="flex-1 space-y-3">
-                {/* Title */}
-                <h3 className="text-lg font-bold text-text-primary">
-                  {selectedMovieForDetails.title}
-                </h3>
-
-                {/* Year */}
-                {selectedMovieForDetails.year && (
-                  <p className="text-sm text-text-secondary">
-                    {selectedMovieForDetails.year}
-                  </p>
-                )}
-
-                {/* Premise (placeholder) */}
-                <div>
-                  <h4 className="text-sm font-semibold text-text-primary mb-1">Synopsis</h4>
-                  <p className="text-sm text-text-secondary leading-relaxed">
-                    An epic tale of adventure, drama, and unexpected twists. Join our heroes as they navigate through challenges and discover what it truly means to overcome adversity.
-                  </p>
-                </div>
-
-                {/* IMDb Rating */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-text-primary">IMDb:</span>
-                  <span className="text-sm text-accent font-semibold">
-                    {selectedMovieForDetails.rating || '7.5'}/10
-                  </span>
-                </div>
-
-                {/* Streaming Providers (placeholder) */}
-                <div>
-                  <h4 className="text-sm font-semibold text-text-primary mb-2">Watch on</h4>
-                  <div className="flex gap-2 flex-wrap">
-                    {['Netflix', 'Prime Video', 'Hulu'].map((provider) => (
-                      <div
-                        key={provider}
-                        className="px-3 py-1.5 bg-surface-elevated rounded-lg text-xs font-medium text-text-primary border border-border"
-                      >
-                        {provider}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </ActionSheet>
+        movie={selectedMovieForDetails}
+        contributors={contributors}
+        onRemove={handleRemoveMovie}
+      />
 
       <BottomNav />
     </div>
