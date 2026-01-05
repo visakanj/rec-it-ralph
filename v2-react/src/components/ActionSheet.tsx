@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { X } from 'lucide-react';
 interface ActionSheetProps {
   isOpen: boolean;
@@ -17,17 +17,21 @@ export function ActionSheet({
   subtitle,
   children
 }: ActionSheetProps) {
+  const controls = useAnimation();
+
   // Prevent body scroll when sheet is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      // Animate to open position when sheet opens
+      controls.start({ y: 0 });
     } else {
       document.body.style.overflow = 'unset';
     }
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen]);
+  }, [isOpen, controls]);
   return <AnimatePresence>
       {isOpen && <>
           {/* Backdrop */}
@@ -46,9 +50,7 @@ export function ActionSheet({
             initial={{
               y: '100%'
             }}
-            animate={{
-              y: 0
-            }}
+            animate={controls}
             exit={{
               y: '100%'
             }}
@@ -61,11 +63,22 @@ export function ActionSheet({
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.5 }}
             dragDirectionLock
-            onDragEnd={(_, info) => {
+            onDragEnd={async (_, info) => {
               // Close if dragged down more than 100px or with velocity > 500
               if (info.offset.y > 100 || info.velocity.y > 500) {
+                // Smoothly animate down to closed position
+                await controls.start({
+                  y: '100%',
+                  transition: {
+                    type: 'spring',
+                    damping: 30,
+                    stiffness: 300
+                  }
+                })
+                // Then trigger close (which will unmount the component)
                 onClose()
               }
+              // If below threshold, Framer Motion automatically springs back to y: 0
             }}
             className="fixed bottom-0 left-0 right-0 z-50 bg-surface-elevated rounded-t-[32px] shadow-2xl overflow-hidden max-w-md mx-auto"
           >
