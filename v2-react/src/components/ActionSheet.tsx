@@ -42,17 +42,33 @@ export function ActionSheet({
       }} onClick={onClose} className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" />
 
           {/* Sheet */}
-          <motion.div initial={{
-        y: '100%'
-      }} animate={{
-        y: 0
-      }} exit={{
-        y: '100%'
-      }} transition={{
-        type: 'spring',
-        damping: 25,
-        stiffness: 300
-      }} className="fixed bottom-0 left-0 right-0 z-50 bg-surface-elevated rounded-t-[32px] shadow-2xl overflow-hidden max-w-md mx-auto">
+          <motion.div
+            initial={{
+              y: '100%'
+            }}
+            animate={{
+              y: 0
+            }}
+            exit={{
+              y: '100%'
+            }}
+            transition={{
+              type: 'spring',
+              damping: 25,
+              stiffness: 300
+            }}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.5 }}
+            dragDirectionLock
+            onDragEnd={(_, info) => {
+              // Close if dragged down more than 100px or with velocity > 500
+              if (info.offset.y > 100 || info.velocity.y > 500) {
+                onClose()
+              }
+            }}
+            className="fixed bottom-0 left-0 right-0 z-50 bg-surface-elevated rounded-t-[32px] shadow-2xl overflow-hidden max-w-md mx-auto"
+          >
             {/* Handle bar for visual affordance */}
             <div className="w-full flex justify-center pt-3 pb-1" onClick={onClose}>
               <div className="w-12 h-1.5 bg-text-tertiary/30 rounded-full" />
