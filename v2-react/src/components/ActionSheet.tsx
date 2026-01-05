@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { X } from 'lucide-react';
 interface ActionSheetProps {
@@ -18,6 +18,23 @@ export function ActionSheet({
   children
 }: ActionSheetProps) {
   const controls = useAnimation();
+  const [isClosing, setIsClosing] = useState(false);
+
+  // Unified close handler - smoothly animates sheet down and fades backdrop
+  const handleClose = async () => {
+    setIsClosing(true);
+    // Smoothly animate down to closed position
+    await controls.start({
+      y: '100%',
+      transition: {
+        type: 'spring',
+        damping: 30,
+        stiffness: 300
+      }
+    });
+    setIsClosing(false);
+    onClose();
+  };
 
   // Prevent body scroll when sheet is open
   useEffect(() => {
@@ -38,12 +55,12 @@ export function ActionSheet({
           <motion.div initial={{
         opacity: 0
       }} animate={{
-        opacity: 1
+        opacity: isClosing ? 0 : 1
       }} exit={{
         opacity: 0
       }} transition={{
         duration: 0.2
-      }} onClick={onClose} className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" />
+      }} onClick={handleClose} className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" />
 
           {/* Sheet */}
           <motion.div
@@ -63,27 +80,17 @@ export function ActionSheet({
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.5 }}
             dragDirectionLock
-            onDragEnd={async (_, info) => {
+            onDragEnd={(_, info) => {
               // Close if dragged down more than 100px or with velocity > 500
               if (info.offset.y > 100 || info.velocity.y > 500) {
-                // Smoothly animate down to closed position
-                await controls.start({
-                  y: '100%',
-                  transition: {
-                    type: 'spring',
-                    damping: 30,
-                    stiffness: 300
-                  }
-                })
-                // Then trigger close (which will unmount the component)
-                onClose()
+                handleClose()
               }
               // If below threshold, Framer Motion automatically springs back to y: 0
             }}
             className="fixed bottom-0 left-0 right-0 z-50 bg-surface-elevated rounded-t-[32px] shadow-2xl overflow-hidden max-w-md mx-auto"
           >
             {/* Handle bar for visual affordance */}
-            <div className="w-full flex justify-center pt-3 pb-1" onClick={onClose}>
+            <div className="w-full flex justify-center pt-3 pb-1" onClick={handleClose}>
               <div className="w-12 h-1.5 bg-text-tertiary/30 rounded-full" />
             </div>
 
@@ -97,7 +104,7 @@ export function ActionSheet({
                         {icon}
                       </div>
                       <button
-                        onClick={onClose}
+                        onClick={handleClose}
                         className="p-2 text-text-tertiary hover:text-text-secondary transition-colors rounded-full bg-text-tertiary/10 hover:bg-text-tertiary/20"
                       >
                         <X size={20} />
@@ -118,7 +125,7 @@ export function ActionSheet({
                     <h3 className="text-lg font-semibold text-text-primary">
                       {title}
                     </h3>
-                    <button onClick={onClose} className="p-1 text-text-tertiary hover:text-text-secondary transition-colors rounded-full hover:bg-surface">
+                    <button onClick={handleClose} className="p-1 text-text-tertiary hover:text-text-secondary transition-colors rounded-full hover:bg-surface">
                       <X size={20} />
                     </button>
                   </div>
