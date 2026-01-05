@@ -76,8 +76,13 @@ export interface DataAdapter {
   getMoviePool(): Movie[];
   removeMovie(movieIndex: number): void;
 
+  // Pick & Tonight Methods (Phase 4-5)
+  pickRandomMovie(): Movie | null;
+  pickTonightMovie(): Movie | null;
+  getTonightPick(): Movie | null;
+  clearTonightPick(): void;
+
   // NOTE: Additional methods will be added in future phases:
-  // - pickTonightMovie(), getTonightPick(), clearTonightPick() (Phase 4-5)
   // - markWatched(), getWatchedMovies(), undoWatched() (Phase 5-6)
   // - getInviteLink(), copyToClipboard() (Phase 7)
 }
