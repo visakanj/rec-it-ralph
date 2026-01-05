@@ -82,8 +82,12 @@ export interface DataAdapter {
   getTonightPick(): Movie | null;
   clearTonightPick(): void;
 
+  // Watched Movies Methods (Phase 5-6)
+  markWatched(movie: Movie): Promise<void>;
+  getWatchedMovies(): WatchedMovie[];
+  undoWatched(watchedMovie: WatchedMovie): boolean;
+
   // NOTE: Additional methods will be added in future phases:
-  // - markWatched(), getWatchedMovies(), undoWatched() (Phase 5-6)
   // - getInviteLink(), copyToClipboard() (Phase 7)
 }
 
