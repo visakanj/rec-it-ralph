@@ -173,7 +173,8 @@ export default function PoolScreen() {
     rating: movie.tmdbData?.voteAverage?.toFixed(1) || '',
     overview: movie.tmdbData?.overview || '',
     suggestedBy: movie.suggestedBy,
-    originalIndex: moviePool.findIndex((m: any) => m.title === movie.title && m.addedAt === movie.addedAt)
+    originalIndex: moviePool.findIndex((m: any) => m.title === movie.title && m.addedAt === movie.addedAt),
+    tmdbId: movie.tmdbData?.id  // Phase 6: For fetching streaming providers
   }))
 
   // Build contributor color map for MoviePosterTile badges

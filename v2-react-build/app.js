@@ -872,21 +872,25 @@ class AppState {
         // Check if within 24 hours
         const timeDiff = Date.now() - watchedMovie.watchedAt;
         if (timeDiff > 24 * 60 * 60 * 1000) return false; // More than 24 hours
-        
-        // Move back to pool
+
+        // Move back to pool - PRESERVE ALL ORIGINAL DATA including tmdbData and addedAt
         const movie = {
-            title: watchedMovie.title,
-            originalTitle: watchedMovie.title,
+            ...watchedMovie,  // Preserve ALL fields (title, tmdbData, etc.)
+            originalTitle: watchedMovie.originalTitle || watchedMovie.title,
             suggestedBy: watchedMovie.suggestedBy,
-            isAutoAdded: false,
-            addedAt: Date.now()
+            isAutoAdded: watchedMovie.isAutoAdded || false,
+            addedAt: watchedMovie.originalAddedAt || watchedMovie.addedAt  // Use original timestamp!
         };
-        
+
+        // Remove watched-specific fields
+        delete movie.watchedAt;
+        delete movie.originalAddedAt;
+
         this.data.moviePool.push(movie);
-        
+
         // Remove from watched
         this.data.watchedMovies = this.data.watchedMovies.filter(m => m !== watchedMovie);
-        
+
         this.save();
         return true;
     }
@@ -1239,6 +1243,9 @@ class AppState {
 
         // Remove from pool
         const [watchedMovie] = this.data.moviePool.splice(movieIndex, 1);
+
+        // Preserve original addedAt timestamp for undo functionality
+        watchedMovie.originalAddedAt = watchedMovie.addedAt;
 
         // Add watched timestamp and move to watched list
         watchedMovie.watchedAt = Date.now();

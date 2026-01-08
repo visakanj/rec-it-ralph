@@ -1,5 +1,9 @@
+import { useState } from 'react'
 import { Film, Calendar, Star } from 'lucide-react'
 import { ActionSheet } from './ActionSheet'
+import { StreamingServicePill } from './StreamingServicePill'
+import { useStreamingProviders } from '../hooks/useStreamingProviders'
+import { getTMDBImageUrl } from '../config/tmdb'
 
 interface MovieDetailsSheetProps {
   isOpen: boolean
@@ -12,6 +16,7 @@ interface MovieDetailsSheetProps {
     overview?: string  // TMDB synopsis
     suggestedBy: string[]
     originalIndex: number
+    tmdbId?: number  // Phase 6: For fetching streaming providers
   } | null
   contributors: Array<{ id: string; name: string; color: string }>
   onRemove: () => void
@@ -24,6 +29,24 @@ export function MovieDetailsSheet({
   contributors,
   onRemove
 }: MovieDetailsSheetProps) {
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
+
+  // Fetch streaming providers for this movie
+  const { providers } = useStreamingProviders(movie?.tmdbId)
+
+  const handleRemoveClick = () => {
+    setShowRemoveConfirm(true)
+  }
+
+  const handleConfirmRemove = () => {
+    setShowRemoveConfirm(false)
+    onRemove()
+  }
+
+  const handleCancelRemove = () => {
+    setShowRemoveConfirm(false)
+  }
+
   if (!movie) return null
 
   // Get contributors who suggested this movie
@@ -32,6 +55,7 @@ export function MovieDetailsSheet({
     .filter(Boolean) as Array<{ id: string; name: string; color: string }>
 
   return (
+    <>
     <ActionSheet isOpen={isOpen} onClose={onClose}>
       {/* Top section: Poster left, details right */}
       <div className="flex gap-4 mb-6">
@@ -88,6 +112,22 @@ export function MovieDetailsSheet({
         </div>
       )}
 
+      {/* Where to Watch (streaming providers) */}
+      {providers.length > 0 && (
+        <div className="mb-6">
+          <h4 className="text-sm font-semibold text-text-primary mb-3">Where to Watch</h4>
+          <div className="flex flex-wrap gap-2">
+            {providers.map((provider) => (
+              <StreamingServicePill
+                key={provider.provider_id}
+                name={provider.provider_name}
+                logo={getTMDBImageUrl(provider.logo_path, 'w92') || ''}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Contributors (full width) */}
       {movieContributors.length > 0 && (
         <div className="mb-6">
@@ -116,12 +156,38 @@ export function MovieDetailsSheet({
       {/* Remove button (fixed at bottom) */}
       <div className="pt-4 border-t border-border">
         <button
-          onClick={onRemove}
+          onClick={handleRemoveClick}
           className="w-full py-3 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-semibold rounded-xl transition-colors active:scale-[0.98]"
         >
           Remove from Pool
         </button>
       </div>
     </ActionSheet>
+
+    {/* Remove confirmation ActionSheet */}
+    <ActionSheet isOpen={showRemoveConfirm} onClose={handleCancelRemove}>
+      <div className="text-center py-4">
+        <div className="text-4xl mb-4">⚠️</div>
+        <h3 className="text-xl font-bold text-text-primary mb-2">Remove from Pool?</h3>
+        <p className="text-text-secondary mb-6">
+          Are you sure you want to remove "{movie.title}" from the pool?
+        </p>
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={handleConfirmRemove}
+            className="w-full py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-colors active:scale-[0.98]"
+          >
+            Yes, Remove
+          </button>
+          <button
+            onClick={handleCancelRemove}
+            className="w-full py-3 px-4 bg-surface-elevated hover:bg-surface border border-border text-text-primary font-semibold rounded-xl transition-colors active:scale-[0.98]"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </ActionSheet>
+    </>
   )
 }

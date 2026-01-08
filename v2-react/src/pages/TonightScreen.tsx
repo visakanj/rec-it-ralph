@@ -3,21 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import { AppBar } from '../components/AppBar'
 import { BottomNav } from '../components/BottomNav'
 import { ContributorChip } from '../components/ContributorChip'
-// import { StreamingServicePill } from '../components/StreamingServicePill'
+import { StreamingServicePill } from '../components/StreamingServicePill'
 import { useAdapter } from '../context/AdapterContext'
 import { useRoom } from '../hooks/useRoom'
-
-// interface StreamingProvider {
-//   name: string
-//   logo: string
-// }
+import { useStreamingProviders } from '../hooks/useStreamingProviders'
+import { getTMDBImageUrl } from '../config/tmdb'
 
 export default function TonightScreen() {
   const navigate = useNavigate()
   const { adapter } = useAdapter()
   const roomData = useRoom(adapter?.getRoomCode() || null)
 
-  // const [streamingProviders, setStreamingProviders] = useState<StreamingProvider[]>([])
   const [isMarkingWatched, setIsMarkingWatched] = useState(false)
   const [isOverviewExpanded, setIsOverviewExpanded] = useState(false)
   const [showExpandButton, setShowExpandButton] = useState(false)
@@ -26,13 +22,22 @@ export default function TonightScreen() {
   const tonightPick = roomData?.tonightPick
   const contributors = roomData?.contributors || []
 
+  // Fetch streaming providers for tonight's pick
+  const { providers } = useStreamingProviders(tonightPick?.tmdbData?.id)
+
   // Check if overview text is truncated (exceeds 5 lines)
   useEffect(() => {
     if (overviewRef.current) {
-      const isTruncated = overviewRef.current.scrollHeight > overviewRef.current.clientHeight
-      setShowExpandButton(isTruncated)
+      // Small delay to ensure content is fully rendered before measuring
+      const timer = setTimeout(() => {
+        if (overviewRef.current) {
+          const isTruncated = overviewRef.current.scrollHeight > overviewRef.current.clientHeight
+          setShowExpandButton(isTruncated)
+        }
+      }, 50)
+      return () => clearTimeout(timer)
     }
-  }, [tonightPick?.tmdbData?.overview])
+  }, [tonightPick?.tmdbData?.overview, isOverviewExpanded])
 
   // Redirect to /pick if no movie picked
   useEffect(() => {
@@ -40,38 +45,6 @@ export default function TonightScreen() {
       navigate('/pick')
     }
   }, [tonightPick, roomData, navigate])
-
-  // Fetch streaming providers (TMDB watch_providers API)
-  // TODO: Uncomment when TMDB API key is configured
-  useEffect(() => {
-    if (!tonightPick?.tmdbData?.id) return
-
-    // const fetchProviders = async () => {
-    //   try {
-    //     const tmdbApiKey = 'YOUR_TMDB_API_KEY' // TODO: Move to env
-    //     const response = await fetch(
-    //       `https://api.themoviedb.org/3/movie/${tonightPick.tmdbData.id}/watch/providers?api_key=${tmdbApiKey}`
-    //     )
-    //     const data = await response.json()
-
-    //     // US providers (flatrate = subscription streaming)
-    //     const usProviders = data.results?.US?.flatrate || []
-
-    //     setStreamingProviders(
-    //       usProviders.map((provider: any) => ({
-    //         name: provider.provider_name,
-    //         logo: `https://image.tmdb.org/t/p/w92${provider.logo_path}`
-    //       }))
-    //     )
-    //   } catch (error) {
-    //     console.error('[TonightScreen] Failed to fetch streaming providers:', error)
-    //     // Gracefully fail - don't show providers
-    //     setStreamingProviders([])
-    //   }
-    // }
-
-    // fetchProviders()
-  }, [tonightPick])
 
   const handleMarkAsWatched = async () => {
     if (!tonightPick || !adapter || isMarkingWatched) return
@@ -194,6 +167,24 @@ export default function TonightScreen() {
               </div>
             </div>
 
+            {/* Where to Watch (streaming providers) */}
+            {providers.length > 0 && (
+              <div className="mb-4">
+                <h3 className="text-xs font-semibold text-text-secondary mb-2 uppercase tracking-wide">
+                  Where to Watch
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {providers.map((provider) => (
+                    <StreamingServicePill
+                      key={provider.provider_id}
+                      name={provider.provider_name}
+                      logo={getTMDBImageUrl(provider.logo_path, 'w92') || ''}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Overview/Premise */}
             {tonightPick.tmdbData?.overview && (
               <div className="mb-4">
@@ -227,25 +218,6 @@ export default function TonightScreen() {
                 )}
               </div>
             )}
-
-            {/* Streaming Services (if available) */}
-            {/* TODO: Uncomment when TMDB API is configured */}
-            {/* {streamingProviders.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-sm font-semibold text-text-secondary mb-3 uppercase tracking-wide">
-                  Where to Watch
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {streamingProviders.map((provider) => (
-                    <StreamingServicePill
-                      key={provider.name}
-                      name={provider.name}
-                      logo={provider.logo}
-                    />
-                  ))}
-                </div>
-              </div>
-            )} */}
 
             {/* Action Buttons */}
             <div className="flex flex-col gap-2">

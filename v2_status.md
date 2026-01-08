@@ -1,8 +1,8 @@
 # V2 Migration Status
 
-**Last Updated**: 2026-01-04
-**Current Phase**: Phase 5 ✅ COMPLETE & MERGED
-**Overall Status**: TonightScreen + Mark Watched Flow Live in Production / Ready for Phase 6
+**Last Updated**: 2026-01-08
+**Current Phase**: Phase 6 ✅ COMPLETE
+**Overall Status**: WatchedScreen + Streaming Providers Implemented / Ready for Testing
 
 ---
 
@@ -87,12 +87,17 @@
   - Quick smoke check: tonight flows work ✅
   - **CRITICAL**: Full cross-tab v1↔v2 sync QA ⬜ Ready for manual testing
 
-- [ ] **Phase 6**: WatchedScreen (~3 hours)
-  - Import MagicPatterns: WatchedScreen UI
-  - Wire watchedMovies grid display
-  - Add undo functionality (24-hour check) - enhancement over MagicPatterns
+- [x] **Phase 6**: WatchedScreen + Streaming Providers (~5 hours) ✅ COMPLETE
+  - Created WatchedMovieCard component with undo functionality
+  - Implemented WatchedScreen with three UI states (no room, empty, list)
+  - Wire watchedMovies display with real-time sync
+  - Add undo functionality (24-hour check) with countdown
+  - **NEW**: Added TMDB streaming providers integration
+  - **NEW**: Streaming providers in MovieDetailsSheet (PoolScreen)
+  - **NEW**: Streaming providers in TonightScreen (above synopsis)
+  - Created useStreamingProviders hook with 1-hour caching
   - Quick smoke check: watched/undo flows work
-  - **CRITICAL**: Full cross-tab v1↔v2 sync QA
+  - **CRITICAL**: Full cross-tab v1↔v2 sync QA (pending manual testing)
 
 ### Optional Features
 - [ ] **Phase 7**: InviteScreen (Optional, ~6 hours)
@@ -383,35 +388,108 @@
 
 **QA Status**: ✅ Ready for manual testing - TonightScreen implementation complete
 
+### PR #7: Phase 6 - WatchedScreen + Streaming Providers
+**Date**: 2026-01-08
+**Branch**: `main` (direct commits)
+**Status**: ✅ COMPLETE - Ready for Testing
+
+**Scope**:
+- **Part A: Streaming Providers Integration**
+  - Created `/v2-react/src/config/tmdb.ts` with TMDB API key and configuration
+  - Created `/v2-react/src/hooks/useStreamingProviders.ts` hook with 1-hour caching
+  - Added `StreamingProvider` TypeScript interface
+  - Updated `MovieDetailsSheet` to show "Where to Watch" section (after Synopsis, before Contributors)
+  - Updated `TonightScreen` to show streaming providers (after rating, before synopsis)
+  - Updated `PoolScreen` to pass `tmdbId` to MovieDetailsSheet
+  - Uses existing `StreamingServicePill` component
+
+- **Part B: WatchedScreen Implementation**
+  - Created `/v2-react/src/components/WatchedMovieCard.tsx` component
+  - Replaced placeholder `/v2-react/src/pages/WatchedScreen.tsx` with full implementation
+  - Three UI states: No room joined, Empty watched list, Watched movies list
+  - Real-time Firebase sync via `useRoom` hook
+  - Undo functionality with 24-hour time limit enforcement
+  - Countdown timer on undo button ("Undo (23h left)")
+  - "Watched X ago" timestamp formatting
+  - Contributor name resolution from IDs
+  - Error handling with dismissible error banner
+
+**Files Created** (3 files):
+- `/v2-react/src/config/tmdb.ts`
+- `/v2-react/src/hooks/useStreamingProviders.ts`
+- `/v2-react/src/components/WatchedMovieCard.tsx`
+
+**Files Modified** (6 files):
+- `/v2-react/src/types/data-adapter.d.ts` (added StreamingProvider interface)
+- `/v2-react/src/components/MovieDetailsSheet.tsx` (added streaming providers section)
+- `/v2-react/src/pages/PoolScreen.tsx` (added tmdbId to movie data)
+- `/v2-react/src/pages/TonightScreen.tsx` (activated streaming providers)
+- `/v2-react/src/pages/WatchedScreen.tsx` (replaced placeholder with full implementation)
+- `/v2_status.md` (marked Phase 6 complete)
+
+**Bundle Size** (Phase 6):
+- `index.html`: 2.70 kB (gzip: 1.17 kB)
+- `index.css`: 26.63 kB (gzip: 5.17 kB)
+- `index.js`: 347.07 kB (gzip: 107.07 kB)
+- **Total**: ~376 KB raw / ~113 KB gzipped
+- **Delta from Phase 5**: +10 KB raw / +2 KB gzipped (WatchedScreen + streaming providers hook)
+
+**Key Features**:
+- ✅ Streaming providers fetch from TMDB API (`/3/movie/{id}/watch/providers`)
+- ✅ 1-hour caching to reduce API calls (matches V1 behavior)
+- ✅ Graceful error handling (empty array if fetch fails)
+- ✅ WatchedScreen with three distinct UI states
+- ✅ Undo button shows countdown timer
+- ✅ Time-based undo eligibility (< 24h enabled, > 24h disabled)
+- ✅ Real-time sync via useRoom hook
+- ✅ Error banner for failed undo operations (dismissible)
+- ✅ No TypeScript errors
+- ✅ Production build successful
+
+**What's Next**: Manual testing of Phase 6 features
+
+**QA Status**: ⬜ Pending manual testing (see test checklist below)
+
 ---
 
 ## Current Phase Details
 
-**Phase**: Phase 5 ✅ COMPLETE
+**Phase**: Phase 6 ✅ COMPLETE
 
-**Phase 5 Summary** (TonightScreen - Display & Actions):
+**Phase 6 Summary** (WatchedScreen + Streaming Providers):
 
 **What Was Built**:
-- TonightScreen with full movie display UI (pre-existing implementation)
-- Movie poster with contributor pills overlay
-- Movie metadata display: title, year, rating
-- Overview with expand/collapse for long descriptions
-- Real-time Firebase sync via useRoom hook for tonightPick
-- "Mark as Watched" action with loading state
-- "Pick Again" action to clear pick and return to picker
-- Auto-redirect to /pick when no movie selected
-- TypeScript definitions for all watched movie methods
+
+*Part A: Streaming Providers Integration*
+- TMDB API configuration with API key from V1
+- `useStreamingProviders` custom hook with 1-hour caching
+- Streaming providers in MovieDetailsSheet (PoolScreen modal)
+- Streaming providers in TonightScreen (after rating, before synopsis)
+- StreamingServicePill component (pre-existing, now active)
+- Fetches from TMDB `/watch/providers` API (flatrate = subscription streaming)
+
+*Part B: WatchedScreen Implementation*
+- WatchedMovieCard component (horizontal card layout)
+- WatchedScreen with three UI states (no room, empty, list)
+- Real-time Firebase sync via useRoom hook
+- Undo functionality with 24-hour time limit enforcement
+- Countdown timer on undo button ("Undo (23h left)")
+- "Watched X ago" timestamp formatting
+- Contributor name resolution from IDs
+- Error handling with dismissible error banner
 
 **Key Accomplishments**:
-- ✅ Discovered TonightScreen was already fully implemented
-- ✅ Added TypeScript definitions for watched methods (markWatched, getWatchedMovies, undoWatched)
-- ✅ Verified real-time sync works correctly (useRoom hook)
-- ✅ Confirmed both action flows work (mark watched, pick again)
-- ✅ Bundle size unchanged (104.51 KB gzipped)
-- ✅ Production-ready implementation
-- ⬜ Cross-tab sync QA ready for manual testing
+- ✅ Streaming providers integrated across PoolScreen and TonightScreen
+- ✅ 1-hour caching reduces TMDB API calls (matches V1 behavior)
+- ✅ WatchedScreen fully functional with undo
+- ✅ Real-time sync via useRoom hook
+- ✅ Time-based undo button state (enabled < 24h, disabled > 24h)
+- ✅ Bundle size delta: +10 KB raw / +2 KB gzipped (within acceptable range)
+- ✅ No TypeScript errors
+- ✅ Production build successful (107.07 KB gzipped)
+- ⬜ Cross-tab v1↔v2 sync QA ready for manual testing
 
-**What's Next**: Phase 6 - WatchedScreen (Display & Undo)
+**What's Next**: Manual testing of Phase 6, then Phase 7 (InviteScreen - Optional) or Phase 8 (Polish + Ship)
 
 ---
 

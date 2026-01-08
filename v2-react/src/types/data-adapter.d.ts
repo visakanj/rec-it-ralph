@@ -17,11 +17,11 @@ export interface Contributor {
 export interface Movie {
   title: string;
   tmdbData?: {
-    poster_path?: string;
-    backdrop_path?: string;
+    posterPath?: string;      // camelCase (matches actual runtime data from app.js)
+    backdropPath?: string;    // camelCase
     overview?: string;
-    release_date?: string;
-    vote_average?: number;
+    releaseDate?: string;     // camelCase
+    voteAverage?: number;     // camelCase
     runtime?: number;
     id?: number;
   };
@@ -49,6 +49,13 @@ export interface RoomHistoryItem {
   theme: string;
   lastVisited: number;
   createdAt: number;
+}
+
+// Streaming provider interface (TMDB watch/providers API - Phase 6)
+export interface StreamingProvider {
+  provider_id: number;
+  provider_name: string;
+  logo_path: string;
 }
 
 // DataAdapter class definition
