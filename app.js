@@ -869,6 +869,14 @@ class AppState {
     }
 
     undoWatched(watchedMovie) {
+        console.log('[undoWatched DEBUG] ═══ UNDO WATCHED START ═══');
+        console.log('[undoWatched DEBUG] Movie title:', watchedMovie.title);
+        console.log('[undoWatched DEBUG] Watched movie has tmdbData?', !!watchedMovie.tmdbData);
+        if (watchedMovie.tmdbData) {
+            console.log('[undoWatched DEBUG] tmdbData.posterPath:', watchedMovie.tmdbData.posterPath);
+            console.log('[undoWatched DEBUG] tmdbData keys:', Object.keys(watchedMovie.tmdbData));
+        }
+
         // Check if within 24 hours
         const timeDiff = Date.now() - watchedMovie.watchedAt;
         if (timeDiff > 24 * 60 * 60 * 1000) return false; // More than 24 hours
@@ -882,16 +890,35 @@ class AppState {
             addedAt: watchedMovie.originalAddedAt || watchedMovie.addedAt  // Use original timestamp!
         };
 
+        console.log('[undoWatched DEBUG] After spread - movie has tmdbData?', !!movie.tmdbData);
+        if (movie.tmdbData) {
+            console.log('[undoWatched DEBUG] After spread - tmdbData.posterPath:', movie.tmdbData.posterPath);
+        }
+
         // Remove watched-specific fields
         delete movie.watchedAt;
         delete movie.originalAddedAt;
 
+        console.log('[undoWatched DEBUG] After delete - movie has tmdbData?', !!movie.tmdbData);
+        if (movie.tmdbData) {
+            console.log('[undoWatched DEBUG] After delete - tmdbData.posterPath:', movie.tmdbData.posterPath);
+        }
+
         this.data.moviePool.push(movie);
+
+        console.log('[undoWatched DEBUG] After push to pool - moviePool length:', this.data.moviePool.length);
+        const movieInPool = this.data.moviePool[this.data.moviePool.length - 1];
+        console.log('[undoWatched DEBUG] Movie in pool has tmdbData?', !!movieInPool.tmdbData);
+        if (movieInPool.tmdbData) {
+            console.log('[undoWatched DEBUG] Movie in pool tmdbData.posterPath:', movieInPool.tmdbData.posterPath);
+        }
 
         // Remove from watched
         this.data.watchedMovies = this.data.watchedMovies.filter(m => m !== watchedMovie);
 
+        console.log('[undoWatched DEBUG] About to call save()');
         this.save();
+        console.log('[undoWatched DEBUG] ═══ UNDO WATCHED END ═══');
         return true;
     }
 
@@ -1173,8 +1200,17 @@ class AppState {
             const moviesWithTmdb = this.data.moviePool.filter(m => m.tmdbData);
             console.log('TMDB: Saving to Firebase -', moviesWithTmdb.length, 'movies have TMDB data');
             if (moviesWithTmdb.length > 0) {
-                console.log('TMDB: Movies with TMDB data:', moviesWithTmdb.map(m => m.title));
+                console.log('TMDB: Movies with TMDB data:', moviesWithTmdb.map(m => ({
+                    title: m.title,
+                    hasPosterPath: !!m.tmdbData?.posterPath,
+                    posterPath: m.tmdbData?.posterPath
+                })));
             }
+
+            console.log('[Firebase DEBUG] About to write moviePool to Firebase. Each movie:');
+            this.data.moviePool.forEach((m, idx) => {
+                console.log(`[Firebase DEBUG]   [${idx}] ${m.title} - tmdbData: ${!!m.tmdbData}, posterPath: ${m.tmdbData?.posterPath || 'MISSING'}`);
+            });
 
             this.firebaseRef.set(this.data)
                 .then(() => {
