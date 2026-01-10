@@ -155,13 +155,13 @@ export default function RoomsScreen() {
           <h2 className="text-3xl font-semibold text-text-primary tracking-tight">
             Your Rooms
           </h2>
-          <p className="text-text-tertiary mt-1 text-base">
+          <p className="text-text-secondary mt-1 text-base">
             Join a room to start picking.
           </p>
         </div>
 
         {roomsWithCounts.length === 0 ? (
-          <div className="text-center py-12 text-text-tertiary">
+          <div className="text-center py-12 text-text-secondary">
             <p className="mb-2">No rooms yet</p>
             <p className="text-sm">Create or join a room to get started</p>
           </div>
