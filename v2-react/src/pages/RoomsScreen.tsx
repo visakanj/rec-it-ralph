@@ -145,12 +145,7 @@ export default function RoomsScreen() {
 
   return (
     <div className="min-h-screen bg-background pb-28 animate-fade-in relative">
-      <AppBar
-        title="Rooms"
-        action={<></>}
-      />
-
-      <main className="pt-20 px-4 max-w-md mx-auto">
+      <main className="pt-8 px-4 max-w-md mx-auto">
         <div className="mb-6">
           <h2 className="text-3xl font-semibold text-text-primary tracking-tight">
             Your Rooms

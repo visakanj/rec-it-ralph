@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AppBar } from '../components/AppBar'
 import { BottomNav } from '../components/BottomNav'
 import { ContributorChip } from '../components/ContributorChip'
 import { StreamingServicePill } from '../components/StreamingServicePill'
@@ -80,7 +79,6 @@ export default function TonightScreen() {
   if (!tonightPick) {
     return (
       <div className="min-h-screen bg-background pb-28 animate-fade-in">
-        <AppBar title="Tonight's Pick" />
         <TonightPickSkeleton />
         <BottomNav />
       </div>
@@ -102,10 +100,13 @@ export default function TonightScreen() {
 
   return (
     <div className="min-h-screen bg-background pb-28 animate-fade-in">
-      {/* No back arrow on Tonight tab */}
-      <AppBar title="Tonight's Pick" />
-
-      <main className="pt-16 px-4 max-w-md mx-auto pb-4">
+      <main className="pt-8 px-4 max-w-md mx-auto pb-4">
+        {/* Page title */}
+        <div className="mb-6">
+          <h2 className="text-3xl font-semibold text-text-primary tracking-tight">
+            Tonight's movie
+          </h2>
+        </div>
         <div className="bg-surface rounded-2xl overflow-hidden border border-border shadow-xl">
           {/* Movie Poster with Contributor Pills Overlay */}
           <div className="relative w-full">

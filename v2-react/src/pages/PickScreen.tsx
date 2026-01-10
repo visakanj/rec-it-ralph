@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, useAnimationControls } from 'framer-motion'
-import { AppBar } from '../components/AppBar'
 import { BottomNav } from '../components/BottomNav'
 import { useAdapter } from '../context/AdapterContext'
 import { useRoom } from '../hooks/useRoom'
@@ -148,9 +147,7 @@ export default function PickScreen() {
 
   return (
     <div className="h-screen overflow-y-hidden bg-gradient-dark pb-28 animate-fade-in">
-      <AppBar title="Pick Tonight" />
-
-      <main className="pt-20 px-4 max-w-full">
+      <main className="pt-8 px-4 max-w-full">
         {/* Empty pool state */}
         {moviePool.length === 0 ? (
           <div className="text-center py-12">

@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Plus, UserPlus, Film, X, ChevronLeft, Copy, Check } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { AppBar } from '../components/AppBar'
 import { BottomNav } from '../components/BottomNav'
 import { ContributorChip } from '../components/ContributorChip'
 import { MoviePosterTile } from '../components/MoviePosterTile'
@@ -121,8 +120,7 @@ export default function PoolScreen() {
   if (!roomCode) {
     return (
       <div className="min-h-screen bg-background pb-28 animate-fade-in">
-        <AppBar title="Pool" />
-        <main className="pt-20 px-4 max-w-md mx-auto">
+        <main className="pt-8 px-4 max-w-md mx-auto">
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🎬</div>
             <h2 className="text-2xl font-bold mb-2">No Active Room</h2>
@@ -144,8 +142,7 @@ export default function PoolScreen() {
   if (!roomData) {
     return (
       <div className="min-h-screen bg-background pb-28 animate-fade-in">
-        <AppBar title="Pool" />
-        <main className="pt-20">
+        <main className="pt-8">
           <MovieGridSkeleton />
         </main>
         <BottomNav />
@@ -153,7 +150,7 @@ export default function PoolScreen() {
     )
   }
 
-  const { theme, contributors, moviePool } = roomData
+  const { contributors, moviePool } = roomData
 
   // Filter movies by selected contributor
   const filteredMovies =
@@ -419,14 +416,16 @@ export default function PoolScreen() {
     <div className="min-h-screen bg-background pb-28 animate-fade-in relative">
       {/* Main pool content - blur when auto-join name prompt is shown */}
       <div className={showAutoJoinNamePrompt ? 'filter blur-sm pointer-events-none' : ''}>
-        <AppBar
-          title={theme || 'Movie Pool'}
-          action={<></>}
-        />
+      <main className="pt-8 px-4 max-w-md mx-auto">
+        {/* Page title */}
+        <div className="mb-6">
+          <h2 className="text-3xl font-semibold text-text-primary tracking-tight">
+            Pool
+          </h2>
+        </div>
 
-      <main className="pt-20">
         {/* Contributors filter section */}
-        <div className="px-4 mb-4">
+        <div className="mb-4">
           <div className="relative">
             <div className="flex gap-2 overflow-x-auto overflow-y-visible py-2 scrollbar-hide">
               {/* "All" chip */}
@@ -458,7 +457,7 @@ export default function PoolScreen() {
         </div>
 
         {/* Movie grid */}
-        <div className="relative px-4">
+        <div className="relative">
           {movies.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🎬</div>

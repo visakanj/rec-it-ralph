@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AppBar } from '../components/AppBar'
 import { BottomNav } from '../components/BottomNav'
 import { WatchedMovieCard } from '../components/WatchedMovieCard'
 import { WatchedListSkeleton } from '../components/Skeleton'
@@ -67,9 +66,7 @@ export default function WatchedScreen() {
   if (!roomCode) {
     return (
       <div className="min-h-screen bg-background pb-28 animate-fade-in">
-        <AppBar title="Watched" />
-
-        <main className="pt-20 px-4 max-w-md mx-auto">
+        <main className="pt-8 px-4 max-w-md mx-auto">
           <div className="text-center py-12">
             <div className="text-6xl mb-4 opacity-50">🏠</div>
             <h2 className="text-2xl font-bold mb-2 text-text-primary">No room joined</h2>
@@ -94,8 +91,7 @@ export default function WatchedScreen() {
   if (!roomData) {
     return (
       <div className="min-h-screen bg-background pb-28 animate-fade-in">
-        <AppBar title="Watched" />
-        <main className="pt-20">
+        <main className="pt-8">
           <WatchedListSkeleton />
         </main>
         <BottomNav />
@@ -107,9 +103,7 @@ export default function WatchedScreen() {
   if (watchedMovies.length === 0) {
     return (
       <div className="min-h-screen bg-background pb-28 animate-fade-in">
-        <AppBar title="Watched" />
-
-        <main className="pt-20 px-4 max-w-md mx-auto">
+        <main className="pt-8 px-4 max-w-md mx-auto">
           <div className="text-center py-12">
             <div className="text-6xl mb-4 opacity-50">📺</div>
             <h2 className="text-2xl font-bold mb-6 text-text-primary">No watched movies yet</h2>
@@ -130,12 +124,10 @@ export default function WatchedScreen() {
   // State C: Room joined, watched movies exist
   return (
     <div className="min-h-screen bg-background pb-28 animate-fade-in">
-      <AppBar title="Watched" />
-
-      <main className="pt-20 px-4 max-w-md mx-auto">
+      <main className="pt-8 px-4 max-w-md mx-auto">
         {/* Header with count */}
-        <div className="mb-4">
-          <h1 className="text-3xl font-bold text-text-primary tracking-tight">Watched</h1>
+        <div className="mb-6">
+          <h1 className="text-3xl font-semibold text-text-primary tracking-tight">Watched movies</h1>
           <p className="text-sm text-text-secondary mt-1">
             {watchedMovies.length} {watchedMovies.length === 1 ? 'movie' : 'movies'}
           </p>
