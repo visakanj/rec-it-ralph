@@ -7,7 +7,7 @@ export function BottomNav() {
   return <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe">
       <div className="absolute inset-0 bg-background-nav/95 backdrop-blur-xl border-t border-border" />
 
-      <div className="relative flex items-center justify-between px-6 pb-3 pt-2 max-w-md mx-auto h-[60px]">
+      <div className="relative flex items-center justify-between px-6 py-4 max-w-md mx-auto h-[80px]">
         {/* Rooms Tab */}
         <Link to="/" className="flex flex-col items-center justify-center w-16 gap-1 group">
           <Home size={24} strokeWidth={isActive('/') ? 2.5 : 2} className={`transition-colors duration-200 ${isActive('/') ? 'text-accent' : 'text-text-secondary group-hover:text-text-primary'}`} />
