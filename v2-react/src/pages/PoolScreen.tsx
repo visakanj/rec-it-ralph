@@ -459,25 +459,46 @@ export default function PoolScreen() {
         {/* Movie grid */}
         <div className="relative">
           {movies.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">🎬</div>
-              <h3 className="text-xl font-bold mb-2">
-                {selectedContributor === 'all'
-                  ? 'No Movies Yet'
-                  : 'No Movies from This Contributor'}
-              </h3>
-              <p className="text-text-secondary mb-6">
-                {selectedContributor === 'all'
-                  ? 'Start building your movie pool'
-                  : 'This contributor hasn\'t added any movies yet'}
-              </p>
-              {selectedContributor === 'all' && (
-                <button
-                  onClick={() => setIsAddMovieOpen(true)}
-                  className="px-6 py-3 bg-accent hover:bg-accent-hover text-white rounded-xl font-medium transition-colors"
-                >
-                  Add First Movie
-                </button>
+            <div className="flex flex-col items-center justify-center py-12 px-4">
+              {selectedContributor === 'all' ? (
+                <>
+                  {/* Illustration */}
+                  <div className="mb-6">
+                    <img
+                      src="/no_movies_added.jpg"
+                      alt="No movies yet"
+                      className="w-[220px] h-[220px] object-cover rounded-2xl"
+                    />
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-2xl font-bold text-text-primary mb-3">
+                    No movies yet
+                  </h3>
+
+                  {/* Helper text */}
+                  <p className="text-base text-text-secondary mb-6">
+                    Start building your movie pool
+                  </p>
+
+                  {/* Primary CTA */}
+                  <button
+                    onClick={() => setIsAddMovieOpen(true)}
+                    className="px-6 py-3 bg-accent hover:bg-accent-hover text-white rounded-xl font-semibold transition-all active:scale-[0.98]"
+                  >
+                    Add movie
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="text-6xl mb-4">🎬</div>
+                  <h3 className="text-xl font-bold mb-2">
+                    No Movies from This Contributor
+                  </h3>
+                  <p className="text-text-secondary mb-6">
+                    This contributor hasn't added any movies yet
+                  </p>
+                </>
               )}
             </div>
           ) : (
