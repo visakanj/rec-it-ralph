@@ -108,8 +108,8 @@ export default function CreateRoomScreen() {
 
           {/* Error Message */}
           {error && (
-            <div className="px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-              <p className="text-sm text-red-400">{error}</p>
+            <div className="px-4 py-3 bg-semantic-error/10 border border-semantic-error/20 rounded-xl">
+              <p className="text-sm text-semantic-error">{error}</p>
             </div>
           )}
 

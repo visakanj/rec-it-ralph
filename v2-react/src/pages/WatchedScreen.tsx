@@ -145,17 +145,17 @@ export default function WatchedScreen() {
         {undoError && (
           <div
             onClick={dismissError}
-            className="mb-4 bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-start justify-between gap-3 cursor-pointer hover:bg-red-500/15 transition-colors"
+            className="mb-4 bg-semantic-error/10 border border-semantic-error/30 rounded-xl p-4 flex items-start justify-between gap-3 cursor-pointer hover:bg-semantic-error/15 transition-colors"
           >
             <div className="flex-1">
-              <p className="text-sm text-red-400">⚠️ {undoError}</p>
+              <p className="text-sm text-semantic-error">⚠️ {undoError}</p>
             </div>
             <button
               onClick={(e) => {
                 e.stopPropagation()
                 dismissError()
               }}
-              className="text-red-400 hover:text-red-300 transition-colors text-xl leading-none"
+              className="text-semantic-error hover:text-semantic-error transition-colors text-xl leading-none"
             >
               ×
             </button>

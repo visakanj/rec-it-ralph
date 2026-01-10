@@ -110,16 +110,20 @@ export default function TonightScreen() {
           {/* Movie Poster with Contributor Pills Overlay */}
           <div className="relative w-full">
             {posterUrl ? (
-              <img
-                src={posterUrl}
-                alt={tonightPick.title}
-                className="w-full aspect-[4/5] object-cover max-h-80"
-                onError={(e) => {
-                  console.error('[TonightScreen] Failed to load poster:', posterUrl)
-                  console.log('[TonightScreen] Movie data:', tonightPick)
-                  e.currentTarget.style.display = 'none'
-                }}
-              />
+              <>
+                <img
+                  src={posterUrl}
+                  alt={tonightPick.title}
+                  className="w-full aspect-[4/5] object-cover max-h-80"
+                  onError={(e) => {
+                    console.error('[TonightScreen] Failed to load poster:', posterUrl)
+                    console.log('[TonightScreen] Movie data:', tonightPick)
+                    e.currentTarget.style.display = 'none'
+                  }}
+                />
+                {/* Gradient overlay - Orbit orb effect */}
+                <div className="absolute inset-0 bg-gradient-orb opacity-20 mix-blend-overlay pointer-events-none"></div>
+              </>
             ) : (
               <div className="w-full aspect-[4/5] bg-surface-elevated flex items-center justify-center max-h-80">
                 <span className="text-6xl">🎬</span>

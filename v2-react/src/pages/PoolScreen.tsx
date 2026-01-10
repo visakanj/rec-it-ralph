@@ -716,9 +716,9 @@ export default function PoolScreen() {
 
                 {/* Error message */}
                 {addMovieError && (
-                  <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-                    <X className="w-4 h-4 text-red-500 flex-shrink-0" />
-                    <p className="text-sm text-red-500">{addMovieError}</p>
+                  <div className="flex items-center gap-2 p-3 bg-semantic-error/10 border border-semantic-error/20 rounded-xl">
+                    <X className="w-4 h-4 text-semantic-error flex-shrink-0" />
+                    <p className="text-sm text-semantic-error">{addMovieError}</p>
                   </div>
                 )}
 
@@ -768,8 +768,8 @@ export default function PoolScreen() {
             >
               {shareUrlCopied ? (
                 <>
-                  <Check className="w-5 h-5 text-green-500" />
-                  <span className="text-green-500">Link Copied!</span>
+                  <Check className="w-5 h-5 text-accent-orange" />
+                  <span className="text-accent-orange">Link Copied!</span>
                 </>
               ) : (
                 <>
@@ -821,9 +821,9 @@ export default function PoolScreen() {
 
             {/* Error message */}
             {addContributorError && (
-              <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-                <X className="w-4 h-4 text-red-500 flex-shrink-0" />
-                <p className="text-sm text-red-500">{addContributorError}</p>
+              <div className="flex items-center gap-2 p-3 bg-semantic-error/10 border border-semantic-error/20 rounded-xl">
+                <X className="w-4 h-4 text-semantic-error flex-shrink-0" />
+                <p className="text-sm text-semantic-error">{addContributorError}</p>
               </div>
             )}
 
@@ -877,8 +877,8 @@ export default function PoolScreen() {
           </div>
 
           {autoJoinNameError && (
-            <div className="px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-              <p className="text-sm text-red-400">{autoJoinNameError}</p>
+            <div className="px-4 py-3 bg-semantic-error/10 border border-semantic-error/20 rounded-xl">
+              <p className="text-sm text-semantic-error">{autoJoinNameError}</p>
             </div>
           )}
 
