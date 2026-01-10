@@ -5,7 +5,7 @@ export function BottomNav() {
   const currentPath = location.pathname;
   const isActive = (path: string) => currentPath === path;
   return <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe">
-      <div className="absolute inset-0 bg-[#0A0A0B]/95 backdrop-blur-xl border-t border-white/[0.06]" />
+      <div className="absolute inset-0 bg-background-nav/95 backdrop-blur-xl border-t border-border" />
 
       <div className="relative flex items-center justify-between px-6 pb-3 pt-2 max-w-md mx-auto h-[60px]">
         {/* Rooms Tab */}
