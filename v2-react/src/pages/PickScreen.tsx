@@ -167,6 +167,13 @@ export default function PickScreen() {
           </div>
         ) : (
           <>
+            {/* Page title */}
+            <div className="mb-6 px-4 max-w-md mx-auto">
+              <h2 className="text-3xl font-semibold text-text-primary tracking-tight">
+                Tonight's movie
+              </h2>
+            </div>
+
             {/* Horizontal roulette strip - ALWAYS VISIBLE */}
             <div className="relative w-full overflow-hidden mb-12 select-none" style={{ height: ITEM_HEIGHT }}>
               <motion.div
