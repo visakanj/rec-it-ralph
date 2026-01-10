@@ -18,11 +18,11 @@ export default {
           elevated: '#2a1f3d'      // Elevated cards
         },
         accent: {
-          DEFAULT: '#643ab1',      // Purple (primary CTA)
-          hover: '#7c4dd4',        // Lighter purple on hover
-          orange: '#fe9f39',       // Secondary accent
-          pink: '#ff2c7b',         // Tertiary accent
-          coral: '#ff6a52'         // Quaternary accent
+          DEFAULT: '#fe9f39',      // Orange (primary CTA - brighter!)
+          hover: '#ffb35c',        // Lighter orange on hover
+          purple: '#7c4dd4',       // Purple accent
+          pink: '#ff2c7b',         // Pink accent
+          coral: '#ff6a52'         // Coral accent
         },
         text: {
           primary: '#FFFFFF',

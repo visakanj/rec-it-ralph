@@ -10,32 +10,32 @@ export function BottomNav() {
       <div className="relative flex items-center justify-between px-6 pb-3 pt-2 max-w-md mx-auto h-[60px]">
         {/* Rooms Tab */}
         <Link to="/" className="flex flex-col items-center justify-center w-16 gap-1 group">
-          <Home size={24} strokeWidth={isActive('/') ? 2.5 : 2} className={`transition-colors duration-200 ${isActive('/') ? 'text-accent' : 'text-text-tertiary group-hover:text-text-secondary'}`} />
-          <span className={`text-[10px] font-medium tracking-wide transition-colors duration-200 ${isActive('/') ? 'text-accent' : 'text-text-tertiary'}`}>
+          <Home size={24} strokeWidth={isActive('/') ? 2.5 : 2} className={`transition-colors duration-200 ${isActive('/') ? 'text-accent' : 'text-text-secondary group-hover:text-text-primary'}`} />
+          <span className={`text-[10px] font-medium tracking-wide transition-colors duration-200 ${isActive('/') ? 'text-accent' : 'text-text-secondary'}`}>
             Rooms
           </span>
         </Link>
 
         {/* Pool Tab */}
         <Link to="/pool" className="flex flex-col items-center justify-center w-16 gap-1 group">
-          <Grid size={24} strokeWidth={isActive('/pool') ? 2.5 : 2} className={`transition-colors duration-200 ${isActive('/pool') ? 'text-accent' : 'text-text-tertiary group-hover:text-text-secondary'}`} />
-          <span className={`text-[10px] font-medium tracking-wide transition-colors duration-200 ${isActive('/pool') ? 'text-accent' : 'text-text-tertiary'}`}>
+          <Grid size={24} strokeWidth={isActive('/pool') ? 2.5 : 2} className={`transition-colors duration-200 ${isActive('/pool') ? 'text-accent' : 'text-text-secondary group-hover:text-text-primary'}`} />
+          <span className={`text-[10px] font-medium tracking-wide transition-colors duration-200 ${isActive('/pool') ? 'text-accent' : 'text-text-secondary'}`}>
             Pool
           </span>
         </Link>
 
         {/* Tonight Tab */}
         <Link to="/tonight" className="flex flex-col items-center justify-center w-16 gap-1 group">
-          <Moon size={24} strokeWidth={isActive('/tonight') ? 2.5 : 2} className={`transition-colors duration-200 ${isActive('/tonight') ? 'text-accent' : 'text-text-tertiary group-hover:text-text-secondary'}`} />
-          <span className={`text-[10px] font-medium tracking-wide transition-colors duration-200 ${isActive('/tonight') ? 'text-accent' : 'text-text-tertiary'}`}>
+          <Moon size={24} strokeWidth={isActive('/tonight') ? 2.5 : 2} className={`transition-colors duration-200 ${isActive('/tonight') ? 'text-accent' : 'text-text-secondary group-hover:text-text-primary'}`} />
+          <span className={`text-[10px] font-medium tracking-wide transition-colors duration-200 ${isActive('/tonight') ? 'text-accent' : 'text-text-secondary'}`}>
             Tonight
           </span>
         </Link>
 
         {/* Watched Tab */}
         <Link to="/watched" className="flex flex-col items-center justify-center w-16 gap-1 group">
-          <Clock size={24} strokeWidth={isActive('/watched') ? 2.5 : 2} className={`transition-colors duration-200 ${isActive('/watched') ? 'text-accent' : 'text-text-tertiary group-hover:text-text-secondary'}`} />
-          <span className={`text-[10px] font-medium tracking-wide transition-colors duration-200 ${isActive('/watched') ? 'text-accent' : 'text-text-tertiary'}`}>
+          <Clock size={24} strokeWidth={isActive('/watched') ? 2.5 : 2} className={`transition-colors duration-200 ${isActive('/watched') ? 'text-accent' : 'text-text-secondary group-hover:text-text-primary'}`} />
+          <span className={`text-[10px] font-medium tracking-wide transition-colors duration-200 ${isActive('/watched') ? 'text-accent' : 'text-text-secondary'}`}>
             Watched
           </span>
         </Link>
