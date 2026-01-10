@@ -4,6 +4,7 @@ import { AppBar } from '../components/AppBar'
 import { BottomNav } from '../components/BottomNav'
 import { ContributorChip } from '../components/ContributorChip'
 import { StreamingServicePill } from '../components/StreamingServicePill'
+import { TonightPickSkeleton } from '../components/Skeleton'
 import { useAdapter } from '../context/AdapterContext'
 import { useRoom } from '../hooks/useRoom'
 import { useStreamingProviders } from '../hooks/useStreamingProviders'
@@ -80,12 +81,7 @@ export default function TonightScreen() {
     return (
       <div className="min-h-screen bg-background pb-28 animate-fade-in">
         <AppBar title="Tonight's Pick" />
-        <main className="pt-20 px-4 max-w-md mx-auto">
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">⏳</div>
-            <h2 className="text-2xl font-bold mb-2">Loading...</h2>
-          </div>
-        </main>
+        <TonightPickSkeleton />
         <BottomNav />
       </div>
     )

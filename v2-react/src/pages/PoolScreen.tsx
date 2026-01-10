@@ -8,6 +8,7 @@ import { ContributorChip } from '../components/ContributorChip'
 import { MoviePosterTile } from '../components/MoviePosterTile'
 import { ActionSheet } from '../components/ActionSheet'
 import { MovieDetailsSheet } from '../components/MovieDetailsSheet'
+import { MovieGridSkeleton } from '../components/Skeleton'
 import { useAdapter } from '../context/AdapterContext'
 import { useRoom } from '../hooks/useRoom'
 
@@ -144,10 +145,8 @@ export default function PoolScreen() {
     return (
       <div className="min-h-screen bg-background pb-28 animate-fade-in">
         <AppBar title="Pool" />
-        <main className="pt-20 px-4 max-w-md mx-auto">
-          <div className="text-center py-12">
-            <div className="text-text-secondary">Loading room data...</div>
-          </div>
+        <main className="pt-20">
+          <MovieGridSkeleton />
         </main>
         <BottomNav />
       </div>

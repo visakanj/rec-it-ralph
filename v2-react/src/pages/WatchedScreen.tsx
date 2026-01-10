@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { AppBar } from '../components/AppBar'
 import { BottomNav } from '../components/BottomNav'
 import { WatchedMovieCard } from '../components/WatchedMovieCard'
+import { WatchedListSkeleton } from '../components/Skeleton'
 import { useAdapter } from '../context/AdapterContext'
 import { useRoom } from '../hooks/useRoom'
 import type { WatchedMovie } from '../types/data-adapter'
@@ -84,6 +85,19 @@ export default function WatchedScreen() {
           </div>
         </main>
 
+        <BottomNav />
+      </div>
+    )
+  }
+
+  // Loading state: Room data not yet loaded
+  if (!roomData) {
+    return (
+      <div className="min-h-screen bg-background pb-28 animate-fade-in">
+        <AppBar title="Watched" />
+        <main className="pt-20">
+          <WatchedListSkeleton />
+        </main>
         <BottomNav />
       </div>
     )

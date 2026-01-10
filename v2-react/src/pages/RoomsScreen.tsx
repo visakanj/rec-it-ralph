@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { AppBar } from '../components/AppBar'
 import { RoomCard } from '../components/RoomCard'
 import { BottomNav } from '../components/BottomNav'
+import { RoomListSkeleton } from '../components/Skeleton'
 import { useAdapter } from '../context/AdapterContext'
 
 export default function RoomsScreen() {
@@ -66,12 +67,12 @@ export default function RoomsScreen() {
   // Show loading state while adapter initializes
   if (!isReady) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="text-center">
-          <div className="text-6xl mb-4">⏳</div>
-          <h1 className="text-2xl font-bold mb-2">Loading...</h1>
-          <p className="text-text-secondary">Connecting to Firebase</p>
-        </div>
+      <div className="min-h-screen bg-background pb-28 animate-fade-in">
+        <AppBar title="Rooms" />
+        <main className="pt-20">
+          <RoomListSkeleton />
+        </main>
+        <BottomNav />
       </div>
     )
   }
