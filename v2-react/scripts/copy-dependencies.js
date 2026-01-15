@@ -19,7 +19,7 @@ copyFileSync(
 )
 
 copyFileSync(
-  join(projectRoot, 'v2', 'data-adapter.js'),
+  join(projectRoot, 'v2-src', 'data-adapter.js'),
   join(publicDir, 'v2', 'data-adapter.js')
 )
 
