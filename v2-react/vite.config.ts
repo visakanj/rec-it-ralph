@@ -48,10 +48,10 @@ export default defineConfig({
     }
   ],
   root: '.',
-  base: '/v2-react-build/',
+  base: '/v2/',
   publicDir: 'public',
   build: {
-    outDir: '../v2-react-build',
+    outDir: '../v2',
     emptyOutDir: true
   }
 })

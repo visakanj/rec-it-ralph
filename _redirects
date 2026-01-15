@@ -1,8 +1,8 @@
-# SPA routing - v2-react-build routes (React migration, highest priority)
-/v2-react-build/*    /v2-react-build/index.html   200
-
-# SPA routing - v2 routes (vanilla JS, legacy)
+# SPA routing - v2 routes (React app - PRODUCTION)
 /v2/*    /v2/index.html   200
+
+# SPA routing - v2-react-build routes (React app - legacy URL for backwards compatibility)
+/v2-react-build/*    /v2-react-build/index.html   200
 
 # SPA routing - all other routes serve v1 index.html
 /*    /index.html   200

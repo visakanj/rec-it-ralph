@@ -13,7 +13,7 @@ function App() {
   return (
     <ErrorBoundary fallbackType="screen">
       <AdapterProvider>
-        <BrowserRouter basename="/v2-react-build">
+        <BrowserRouter basename="/v2">
           <div className="min-h-screen bg-background text-text-primary font-sans">
             <Routes>
               <Route path="/" element={<ScreenErrorBoundary><RoomsScreen /></ScreenErrorBoundary>} />
