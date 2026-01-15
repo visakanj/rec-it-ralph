@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AppBar } from '../components/AppBar'
 import { BottomNav } from '../components/BottomNav'
@@ -8,8 +8,17 @@ export default function CreateRoomScreen() {
   const navigate = useNavigate()
   const { adapter, isReady } = useAdapter()
   const [theme, setTheme] = useState('')
+  const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Pre-populate name from localStorage if available
+  useEffect(() => {
+    const savedName = localStorage.getItem('recitralph:v2:contributorName')
+    if (savedName) {
+      setName(savedName)
+    }
+  }, [])
 
   // Show loading state while adapter initializes
   if (!isReady) {
@@ -37,6 +46,13 @@ export default function CreateRoomScreen() {
       return
     }
 
+    // Validate name
+    const trimmedName = name.trim()
+    if (!trimmedName) {
+      setError('Your name is required')
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -57,6 +73,13 @@ export default function CreateRoomScreen() {
       }
 
       console.log('[CreateRoomScreen] Room created successfully:', roomCode)
+
+      // Add creator as first contributor
+      adapter.addContributor(trimmedName)
+      console.log('[CreateRoomScreen] Added creator as contributor:', trimmedName)
+
+      // Save name to localStorage for future use
+      localStorage.setItem('recitralph:v2:contributorName', trimmedName)
 
       // Navigate to pool screen
       navigate('/pool')
@@ -101,6 +124,29 @@ export default function CreateRoomScreen() {
                 if (error) setError('')
               }}
               placeholder="e.g. Friday Movie Night"
+              className="w-full px-4 py-3 bg-surface rounded-xl border border-border text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
+              disabled={loading}
+            />
+          </div>
+
+          {/* Name Input */}
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-text-secondary mb-2"
+            >
+              Your Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value)
+                // Clear error when user starts typing
+                if (error) setError('')
+              }}
+              placeholder="e.g. Sarah"
               className="w-full px-4 py-3 bg-surface rounded-xl border border-border text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
               disabled={loading}
             />
