@@ -104,15 +104,33 @@ export default function WatchedScreen() {
     return (
       <div className="min-h-screen bg-background pb-28 animate-fade-in">
         <main className="pt-8 px-4 max-w-md mx-auto">
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4 opacity-50">📺</div>
-            <h2 className="text-2xl font-bold mb-6 text-text-primary">No watched movies yet</h2>
-            <button
-              onClick={() => navigate('/pool')}
-              className="px-6 py-3 bg-accent hover:bg-accent-hover text-white font-semibold rounded-xl transition-all active:scale-[0.98]"
-            >
-              Go to Pool
-            </button>
+          {/* Page title */}
+          <div className="mb-6">
+            <h2 className="text-3xl font-semibold text-text-primary tracking-tight">
+              Watched movies
+            </h2>
+          </div>
+
+          {/* Empty state */}
+          <div className="flex flex-col items-center justify-center py-12 px-4">
+            {/* Illustration */}
+            <div className="mb-6">
+              <img
+                src={`${import.meta.env.BASE_URL}no_watched_movies.png`}
+                alt="No watched movies yet"
+                className="w-[220px] h-[220px] object-cover rounded-2xl"
+              />
+            </div>
+
+            {/* Title */}
+            <h3 className="text-2xl font-bold text-text-primary mb-3">
+              No watched movies yet
+            </h3>
+
+            {/* Helper text */}
+            <p className="text-base text-text-secondary text-center">
+              Watch your first movie to log it here
+            </p>
           </div>
         </main>
 
