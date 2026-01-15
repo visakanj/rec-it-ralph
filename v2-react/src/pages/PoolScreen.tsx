@@ -465,7 +465,7 @@ export default function PoolScreen() {
                   {/* Illustration */}
                   <div className="mb-6">
                     <img
-                      src="/no_movies_added.jpg"
+                      src={`${import.meta.env.BASE_URL}no_movies_added.jpg`}
                       alt="No movies yet"
                       className="w-[220px] h-[220px] object-cover rounded-2xl"
                     />
