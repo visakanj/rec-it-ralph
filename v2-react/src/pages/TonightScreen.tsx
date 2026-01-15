@@ -21,6 +21,7 @@ export default function TonightScreen() {
 
   const tonightPick = roomData?.tonightPick
   const contributors = roomData?.contributors || []
+  const moviePool = roomData?.moviePool || []
 
   // Fetch streaming providers for tonight's pick
   const { providers } = useStreamingProviders(tonightPick?.tmdbData?.id)
@@ -39,12 +40,12 @@ export default function TonightScreen() {
     }
   }, [tonightPick?.tmdbData?.overview, isOverviewExpanded])
 
-  // Redirect to /pick if no movie picked
+  // Redirect to /pick if no movie picked AND movies exist in pool
   useEffect(() => {
-    if (roomData && !tonightPick) {
+    if (roomData && !tonightPick && moviePool.length > 0) {
       navigate('/pick')
     }
-  }, [tonightPick, roomData, navigate])
+  }, [tonightPick, roomData, moviePool.length, navigate])
 
   const handleMarkAsWatched = async () => {
     if (!tonightPick || !adapter || isMarkingWatched) return
@@ -67,6 +68,11 @@ export default function TonightScreen() {
     navigate('/pick')
   }
 
+  const handleAddMovie = () => {
+    // Navigate to Pool tab and trigger add movie sheet
+    navigate('/pool', { state: { openAddMovieSheet: true } })
+  }
+
   // Get contributor objects from IDs
   const getContributors = (suggestedByIds: string[]) => {
     if (!suggestedByIds || suggestedByIds.length === 0) return []
@@ -76,6 +82,54 @@ export default function TonightScreen() {
       .filter(Boolean) as Array<{ id: string; name: string; color: string }>
   }
 
+  // Empty pool state - show premium empty state
+  if (roomData && moviePool.length === 0) {
+    return (
+      <div className="min-h-screen bg-background pb-28 animate-fade-in">
+        <main className="pt-8 px-4 max-w-md mx-auto">
+          {/* Page title */}
+          <div className="mb-6">
+            <h2 className="text-3xl font-semibold text-text-primary tracking-tight">
+              Tonight's movie
+            </h2>
+          </div>
+
+          {/* Empty state */}
+          <div className="flex flex-col items-center justify-center py-12 px-4">
+            {/* Illustration */}
+            <div className="mb-6">
+              <img
+                src={`${import.meta.env.BASE_URL}no_movies_added.jpg`}
+                alt="No movies yet"
+                className="w-[220px] h-[220px] object-cover rounded-2xl"
+              />
+            </div>
+
+            {/* Title */}
+            <h3 className="text-2xl font-bold text-text-primary mb-3">
+              No movies yet
+            </h3>
+
+            {/* Helper text */}
+            <p className="text-base text-text-secondary mb-6">
+              Start building your movie pool
+            </p>
+
+            {/* Primary CTA */}
+            <button
+              onClick={handleAddMovie}
+              className="px-6 py-3 bg-accent hover:bg-accent-hover text-white rounded-xl font-semibold transition-all active:scale-[0.98]"
+            >
+              Add movie
+            </button>
+          </div>
+        </main>
+        <BottomNav />
+      </div>
+    )
+  }
+
+  // Loading state - show skeleton
   if (!tonightPick) {
     return (
       <div className="min-h-screen bg-background pb-28 animate-fade-in">

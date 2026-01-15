@@ -94,6 +94,17 @@ export default function PoolScreen() {
     }
   }, [location, isReady, adapter])
 
+  // Auto-open add movie sheet if navigated from Tonight tab
+  useEffect(() => {
+    const state = location.state as { openAddMovieSheet?: boolean } | null
+
+    if (state?.openAddMovieSheet && roomData?.contributors?.length > 0) {
+      setIsAddMovieOpen(true)
+      // Clear navigation state to prevent re-opening on refresh
+      window.history.replaceState({}, '')
+    }
+  }, [location, roomData?.contributors])
+
   // Auto-redirect to Rooms if no room is selected (unless auto-joining)
   useEffect(() => {
     if (!roomCode && isReady) {
